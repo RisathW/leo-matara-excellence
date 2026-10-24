@@ -154,13 +154,15 @@ footer{padding:40px 0;font-size:.9rem;color:var(--muted);border-top:1px solid va
 .foot-social{margin-top:0}
 
 /* loader */
-.loader{position:fixed;inset:0;z-index:100;background:var(--surface);display:grid;place-items:center;align-content:center;gap:28px;transition:opacity .6s .1s,visibility .6s .1s}
-.loader img{width:120px;animation:pulse 1.4s ease-in-out infinite}
-.loader i{display:block;width:140px;height:2px;background:var(--line);position:relative;overflow:hidden}
-.loader i::after{content:"";position:absolute;inset:0;background:var(--gold);transform:translateX(-100%);animation:bar 1.1s ease-in-out infinite}
+.loader{position:fixed;inset:0;z-index:100;background:var(--surface);display:grid;place-items:center;transition:opacity .6s .1s,visibility .6s .1s}
+.lg{position:relative;width:clamp(130px,22vw,170px);aspect-ratio:642/658}
+.lg img{position:absolute;inset:0;width:100%;height:100%}
+.lg-logo{opacity:0;animation:logo-in .7s 1.3s ease forwards}
+.lg-draw{animation:draw-out .5s 1.7s ease forwards}
+@keyframes logo-in{to{opacity:1}}
+@keyframes draw-out{to{opacity:0}}
+@media(prefers-reduced-motion:reduce){.lg-logo{animation:none;opacity:1}.lg-draw{display:none}}
 .loader.done{opacity:0;visibility:hidden}
-@keyframes pulse{50%{transform:scale(1.08);opacity:.8}}
-@keyframes bar{to{transform:translateX(100%)}}
 
 /* entrance + reveal */
 .hero-text>*,.hero-media{opacity:0;transform:translateY(28px)}

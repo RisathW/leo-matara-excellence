@@ -21,8 +21,12 @@ addEventListener('resize', () => { if (innerWidth > 980) closeMenu(); });
 document.documentElement.classList.add('js');
 const loader = $('#loader');
 const start = () => { loader.classList.add('done'); document.body.classList.add('ready'); };
-addEventListener('load', () => setTimeout(start, 250));
-setTimeout(start, 2500); // fallback if load stalls
+// the logo draws itself on the first visit of a session; later pages only flash the loader
+let first = true;
+try { first = !sessionStorage.getItem('seen'); sessionStorage.setItem('seen', '1'); } catch {}
+const minShow = first && !reduceMotion ? 2300 : 250;
+addEventListener('load', () => setTimeout(start, Math.max(250, minShow - performance.now())));
+setTimeout(start, 4500); // fallback if load stalls
 
 if ($('.hero')) {
 // hero slideshow: auto-advances, but can be paused (WCAG 2.2.2) and stays still for reduced-motion users
