@@ -194,6 +194,17 @@ const end = e => {
 stage.addEventListener('pointerup', end);
 stage.addEventListener('pointercancel', end);
 
+// mouse wheel turns pages (scrolls normally when zoomed in); the pause stops a trackpad's momentum flipping many pages at once
+let wheelAt = 0;
+stage.addEventListener('wheel', e => {
+  if (zoom > 1 || e.ctrlKey || thumbs.hidden === false) return;
+  e.preventDefault();
+  const d = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+  if (Math.abs(d) < 4 || Date.now() - wheelAt < 450) return;
+  wheelAt = Date.now();
+  go(d > 0 ? 1 : -1);
+}, { passive: false });
+
 prevB.onclick = () => go(-1);
 nextB.onclick = () => go(1);
 slider.oninput = () => jump(+slider.value);
