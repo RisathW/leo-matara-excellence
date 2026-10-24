@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Magazine | Leo Club of Matara Excellence</title>
 <meta name="description" content="The magazine of the Leo Club of Matara Excellence: stories, projects and people from our club.">
 <meta name="robots" content="noindex, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
@@ -38,10 +38,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Antonio:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;1,400;1,500&display=swap" rel="stylesheet">
 <script>document.documentElement.dataset.theme="dark";try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
-<link rel="stylesheet" href="style.css?v=20">
+<link rel="stylesheet" href="style.css?v=22">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://yourclub.example/"},{"@type":"ListItem","position":2,"name":"Magazine","item":"https://yourclub.example/magazine-viewer.html"}]}</script>
 </head>
-<body>
+<body class="viewer-page">
 <a class="skip" href="#main">Skip to content</a>
 <div class="loader" id="loader" aria-hidden="true"><img src="assets/logo-sm.png" alt="" width="96" height="96"><i></i></div>
 <header class="nav" id="top">
@@ -68,22 +68,28 @@
 <main id="main" tabindex="-1" class="viewer-main">
 <section class="flip" id="flip">
   <div class="flip-bar">
-    <a class="flip-back" href="magazine.html">← All editions</a>
+    <a class="flip-back" href="magazine.html" aria-label="All editions"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg><span>All editions</span></a>
     <h1 id="flip-title">Magazine</h1>
     <div class="flip-tools">
-      <button id="flip-zout" aria-label="Zoom out">−</button>
-      <button id="flip-zin" aria-label="Zoom in">+</button>
-      <button id="flip-full" aria-label="Full screen">Full screen</button>
-      <button id="flip-share">Share</button>
-      <a id="flip-pdf" href="#" download hidden>Download PDF</a>
+      <button class="fb" id="flip-pages" aria-label="Pages" title="Pages"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg></button>
+      <button class="fb hide-sm" id="flip-zout" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6"/></svg></button>
+      <button class="fb hide-sm" id="flip-zin" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M11 8v6M8 11h6"/></svg></button>
+      <button class="fb hide-sm" id="flip-full" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button class="fb" id="flip-share" aria-label="Share" title="Share"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-4M8.6 13.5l6.8 4"/></svg></button>
+      <a class="fb" id="flip-pdf" href="#" download hidden aria-label="Download PDF" title="Download PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></a>
     </div>
   </div>
   <div class="flip-stage" id="flip-stage"><div class="book at-start" id="flip-book" aria-live="polite"></div></div>
   <div class="flip-nav">
-    <button id="flip-prev" aria-label="Previous page">←</button>
+    <button class="fb" id="flip-prev" aria-label="Previous page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <input type="range" id="flip-slider" min="1" max="1" value="1" aria-label="Go to page">
     <span id="flip-label">1</span>
-    <button id="flip-next" aria-label="Next page">→</button>
+    <button class="fb" id="flip-next" aria-label="Next page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>
+  <aside class="flip-thumbs" id="flip-thumbs" hidden aria-label="All pages">
+    <div class="flip-thumbs-head"><b>Pages</b><button class="fb" id="flip-thumbs-close" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="flip-thumbs-grid" id="flip-thumbs-grid"></div>
+  </aside>
 </section>
 </main>
 </main>
@@ -103,7 +109,7 @@
 <script src="team-data.js?v=2"></script>
 <script src="team.js?v=2"></script>
 <script src="magazine-data.js?v=1"></script>
-<script src="magazine.js?v=1"></script>
+<script src="magazine.js?v=3"></script>
 <script src="script.js?v=18"></script>
 </body>
 </html>
