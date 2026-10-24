@@ -773,3 +773,22 @@ main:focus{outline:0}
 .logo-row img.wide{max-height:none}
 [data-theme="dark"] .logo-row img:not(.for-dark):not(.wide){filter:drop-shadow(0 0 22px rgba(255,255,255,.07))}
 @media(max-width:760px){.logo-row img{max-height:96px}}
+
+
+/* ===================== breadcrumbs, FAQ, 404 ===================== */
+.breadcrumb{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:18px;font-size:.82rem;color:var(--muted)}
+.breadcrumb a{color:var(--gold-d);font-weight:600;padding:6px 0}
+.breadcrumb a:hover{text-decoration:underline}
+.breadcrumb [aria-current]{color:var(--ink)}
+
+.faq{display:grid;gap:12px;max-width:860px;margin-top:28px}
+.faq details{background:var(--surface);border:1px solid var(--line);border-radius:18px;transition:border-color .3s}
+.faq details[open]{border-color:rgba(47,208,218,.5)}
+.faq summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 24px;font:600 1.05rem Inter,sans-serif;color:var(--ink)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";flex:none;width:30px;height:30px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--gold);color:var(--gold-d);font-size:1.2rem;line-height:1;transition:transform .3s,background .3s}
+.faq details[open] summary::after{transform:rotate(45deg);background:var(--gold);color:#04070b}
+.faq p{padding:0 24px 22px;color:var(--muted);max-width:68ch}
+
+.nf{min-height:70vh;display:flex;align-items:center}
+.nf-cta{gap:12px 28px;margin-top:30px}
