@@ -1,48 +1,69 @@
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // mobile menu
 const btn = $('.menu-btn'), links = $('.links');
 const closeMenu = () => { links.classList.remove('open'); btn.setAttribute('aria-expanded', false); };
 btn.addEventListener('click', () => btn.setAttribute('aria-expanded', links.classList.toggle('open')));
 links.addEventListener('click', e => { if (e.target.closest('a')) closeMenu(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
 
 // load + reveal animations
 document.documentElement.classList.add('js');
 const loader = $('#loader');
 const start = () => { loader.classList.add('done'); document.body.classList.add('ready'); };
-window.addEventListener('load', () => setTimeout(start, 600));
-setTimeout(start, 3000); // fallback if load stalls
+addEventListener('load', () => setTimeout(start, 250));
+setTimeout(start, 2500); // fallback if load stalls
 
-// hero slideshow
-const heads = $$('.hs'), media = $$('.hm'), dots = $$('#dots button'), no = $('#hero-no');
-let hi = 0, timer;
+if ($('.hero')) {
+// hero slideshow: auto-advances, but can be paused (WCAG 2.2.2) and stays still for reduced-motion users
+const heads = $$('.hs'), media = $$('.hm'), dots = $$('#dots button:not(.pause)'), no = $('#hero-no');
+const pauseBtn = $('#pause');
+let hi = 0, timer = null, paused = reduceMotion;
 const show = i => {
   hi = (i + heads.length) % heads.length;
-  [heads, media].forEach(g => g.forEach((el, k) => el.classList.toggle('active', k === hi)));
-  dots.forEach((d, k) => d.classList.toggle('on', k === hi));
+  heads.forEach((el, k) => { el.classList.toggle('active', k === hi); el.setAttribute('aria-hidden', k === hi ? 'false' : 'true'); });
+  media.forEach((el, k) => el.classList.toggle('active', k === hi));
+  dots.forEach((d, k) => { d.classList.toggle('on', k === hi); d.toggleAttribute('aria-current', k === hi); });
   no.textContent = String(hi + 1).padStart(2, '0');
 };
-const auto = () => { clearInterval(timer); timer = setInterval(() => show(hi + 1), 6000); };
+const auto = () => { clearInterval(timer); if (!paused) timer = setInterval(() => show(hi + 1), 6000); };
+const setPaused = p => {
+  paused = p;
+  pauseBtn.setAttribute('aria-pressed', String(p));
+  pauseBtn.setAttribute('aria-label', p ? 'Play slideshow' : 'Pause slideshow');
+  pauseBtn.classList.toggle('is-paused', p);
+  auto();
+};
 dots.forEach((d, k) => d.addEventListener('click', () => { show(k); auto(); }));
-auto();
+pauseBtn.addEventListener('click', () => setPaused(!paused));
+$('.hero').addEventListener('mouseenter', () => clearInterval(timer));
+$('.hero').addEventListener('mouseleave', auto);
+$('.hero').addEventListener('focusin', () => clearInterval(timer));
+show(0);
+setPaused(reduceMotion);
+}
 
-// active nav link while scrolling
+// active nav link while scrolling (follows page order)
 const navLinks = $$('.links > a[href^="#"]:not(.pill), .links .dd-t');
 const secs = navLinks.map(a => $(a.getAttribute('href'))).filter(Boolean);
 addEventListener('scroll', () => {
   const y = scrollY + 120;
-  let cur = null;
-  let best = -1;
+  let cur = null, best = -1;
   secs.forEach(s => { if (s.offsetTop <= y && s.offsetTop > best) { best = s.offsetTop; cur = s.id; } });
-  navLinks.forEach(a => a.classList.toggle('active',
-    cur ? a.getAttribute('href') === '#' + cur : a.getAttribute('href') === '#top'));
+  navLinks.forEach(a => {
+    const on = cur ? a.getAttribute('href') === '#' + cur : a.getAttribute('href') === '#top';
+    a.classList.toggle('active', on);
+    if (on) a.setAttribute('aria-current', 'location'); else a.removeAttribute('aria-current');
+  });
 }, { passive: true });
 
 // animated counters
 const fmt = (n, el) => el.hasAttribute('data-plain') ? String(n) : n.toLocaleString('en-US');
 const run = el => {
   const end = +el.dataset.count, suf = el.dataset.suffix || '', t0 = performance.now();
+  if (reduceMotion) { el.textContent = fmt(end, el) + suf; return; }
   const step = t => {
     const p = Math.min((t - t0) / 1400, 1), e = 1 - Math.pow(1 - p, 3);
     el.textContent = fmt(Math.round(end * e), el) + (p === 1 ? suf : '');
@@ -66,14 +87,14 @@ const projects = [
   // { file: 'beach-cleanup.jpg', title: 'Beach clean-up' },
 ];
 const gallery = $('#gallery');
-const slots = Math.max(projects.length, 6);
+const slots = gallery ? Math.max(projects.length, 6) : 0;
 for (let i = 0; i < slots; i++) {
   const p = projects[i], fig = document.createElement('figure');
   if (p) {
-    fig.innerHTML = `<img src="assets/gallery/${p.file}" alt="${p.title}" loading="lazy"><figcaption>${p.title}</figcaption>`;
+    fig.innerHTML = `<img src="assets/gallery/${p.file}" alt="${p.title}" loading="lazy" decoding="async"><figcaption>${p.title}</figcaption>`;
   } else {
     fig.className = 'empty';
-    fig.innerHTML = '<figcaption>Project photo coming soon</figcaption>';
+    fig.innerHTML = '<figcaption>More project photos coming soon</figcaption>';
   }
   gallery.appendChild(fig);
 }
@@ -89,32 +110,51 @@ if ('IntersectionObserver' in window) {
   reveals.forEach(r => ro.observe(r));
 } else reveals.forEach(r => r.classList.add('in'));
 
-// testimonials
-const slides = $$('.slide');
-let cur = 0;
-$('.slider-ctrl').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  slides[cur].classList.remove('active');
-  cur = (cur + +b.dataset.dir + slides.length) % slides.length;
-  slides[cur].classList.add('active');
-});
-
-// join form -> email draft (set the club address here)
-const CLUB_EMAIL = 'hello@example.com';
-$('#join-form').addEventListener('submit', e => {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  const body = [
-    `Name: ${f.get('name')}`, `Age: ${f.get('age')}`, `Phone: ${f.get('phone')}`,
-    `School/Workplace: ${f.get('org')}`, `Interests: ${f.getAll('int').join(', ')}`,
-    `Why join: ${f.get('why')}`
-  ].join('\n');
-  location.href = `mailto:${CLUB_EMAIL}?subject=${encodeURIComponent('Join Leo Club of Matara Excellence')}&body=${encodeURIComponent(body)}`;
-});
+// sticky "Become a Leo" bar on phones: shown after the hero, hidden once the join form is on screen
+const sticky = $('#sticky-cta'), heroEl = $('.hero'), joinEl = $('#join');
+if (sticky && heroEl && joinEl && 'IntersectionObserver' in window) {
+  let pastHero = false, joinVisible = false;
+  const upd = () => sticky.classList.toggle('show', pastHero && !joinVisible);
+  new IntersectionObserver(([e]) => { pastHero = !e.isIntersecting; upd(); }).observe(heroEl);
+  new IntersectionObserver(([e]) => { joinVisible = e.isIntersecting; upd(); }, { threshold: .15 }).observe(joinEl);
+}
 
 // theme toggle (remembered per visitor)
-$('#theme').addEventListener('click', () => {
+const themeBtn = $('#theme');
+const syncTheme = () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  themeBtn.setAttribute('aria-pressed', String(dark));
+  themeBtn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+};
+themeBtn.addEventListener('click', () => {
   const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
   document.documentElement.dataset.theme = next;
   try { localStorage.setItem('theme', next); } catch (e) {}
+  syncTheme();
+});
+syncTheme();
+
+// join form: sends by email if CLUB_EMAIL is set, otherwise copies the details and opens the club's Instagram inbox
+const CLUB_EMAIL = '';
+const IG_DM = 'https://ig.me/m/leos.of.matara.excellence';
+if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = new FormData(e.target), status = $('#form-status');
+  const body = [
+    'Join request: Leo Club of Matara Excellence',
+    `Name: ${f.get('name')}`, `Age: ${f.get('age')}`, `Phone: ${f.get('phone')}`,
+    `School/Workplace: ${f.get('org')}`, `Interests: ${f.getAll('int').join(', ') || '-'}`,
+    `Why join: ${f.get('why') || '-'}`
+  ].join('\n');
+  if (CLUB_EMAIL) {
+    location.href = `mailto:${CLUB_EMAIL}?subject=${encodeURIComponent('Join Leo Club of Matara Excellence')}&body=${encodeURIComponent(body)}`;
+    status.textContent = 'Opening your email app…';
+    return;
+  }
+  let copied = false;
+  try { await navigator.clipboard.writeText(body); copied = true; } catch (err) {}
+  status.textContent = copied
+    ? 'Details copied. Paste them into the Instagram message that just opened.'
+    : 'Instagram is opening. Please type your name, age and phone number in the message.';
+  window.open(IG_DM, '_blank', 'noopener');
 });
