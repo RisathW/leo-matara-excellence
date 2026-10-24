@@ -2,12 +2,20 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// mobile menu
+// mobile menu: full-screen panel, hamburger turns into a cross, page scroll locked while open
 const btn = $('.menu-btn'), links = $('.links');
-const closeMenu = () => { links.classList.remove('open'); btn.setAttribute('aria-expanded', false); };
-btn.addEventListener('click', () => btn.setAttribute('aria-expanded', links.classList.toggle('open')));
+const setMenu = open => {
+  links.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', String(open));
+  btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  document.documentElement.classList.toggle('menu-open', open);
+};
+const closeMenu = () => setMenu(false);
+btn.setAttribute('aria-label', 'Open menu');
+btn.addEventListener('click', () => setMenu(!links.classList.contains('open')));
 links.addEventListener('click', e => { if (e.target.closest('a')) closeMenu(); });
-addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && links.classList.contains('open')) { closeMenu(); btn.focus(); } });
+addEventListener('resize', () => { if (innerWidth > 980) closeMenu(); });
 
 // load + reveal animations
 document.documentElement.classList.add('js');
@@ -110,13 +118,12 @@ if ('IntersectionObserver' in window) {
   reveals.forEach(r => ro.observe(r));
 } else reveals.forEach(r => r.classList.add('in'));
 
-// sticky "Become a Leo" bar on phones: shown after the hero, hidden once the join form is on screen
-const sticky = $('#sticky-cta'), heroEl = $('.hero'), joinEl = $('#join');
-if (sticky && heroEl && joinEl && 'IntersectionObserver' in window) {
-  let pastHero = false, joinVisible = false;
-  const upd = () => sticky.classList.toggle('show', pastHero && !joinVisible);
-  new IntersectionObserver(([e]) => { pastHero = !e.isIntersecting; upd(); }).observe(heroEl);
-  new IntersectionObserver(([e]) => { joinVisible = e.isIntersecting; upd(); }, { threshold: .15 }).observe(joinEl);
+// sticky "Become a Leo" bar on phones: appears once you have scrolled past the first screen
+const sticky = $('#sticky-cta');
+if (sticky) {
+  const upd = () => sticky.classList.toggle('show', scrollY > 520);
+  addEventListener('scroll', upd, { passive: true });
+  upd();
 }
 
 // theme toggle (remembered per visitor)
@@ -158,3 +165,19 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
     : 'Instagram is opening. Please type your name, age and phone number in the message.';
   window.open(IG_DM, '_blank', 'noopener');
 });
+
+
+// L / E / O panels: hover or tap to open one at a time
+const leoPanels = $$('.leo-panel');
+if (leoPanels.length) {
+  const openPanel = p => leoPanels.forEach(q => {
+    const on = q === p;
+    q.classList.toggle('is-open', on);
+    $('.leo-tab', q).setAttribute('aria-expanded', String(on));
+  });
+  const canHover = matchMedia('(hover: hover)').matches;
+  leoPanels.forEach(p => {
+    $('.leo-tab', p).addEventListener('click', () => openPanel(p));
+    if (canHover) p.addEventListener('mouseenter', () => openPanel(p));
+  });
+}
