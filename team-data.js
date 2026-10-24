@@ -1,8 +1,8 @@
 /*
   TEAM DATA: the only file you need to edit to update the team.
 
-  - exec:      the 5 officers shown on the home page (in this order)
-  - moreExec:  the other executive members, shown on members.html under "Executive committee"
+  - exec:      the 5 officers shown on the home page (in this order); members.html shows them first in the executive committee
+  - moreExec:  the other executive members, shown after the officers on members.html under "Executive committee"
   - members:   everyone else, shown on members.html under "Members"
   - name:      leave "" until you have it (the card shows "To be announced")
   - photo:     path to a square-ish headshot, e.g. "assets/team/nimal.jpg" (leave "" for a silhouette)

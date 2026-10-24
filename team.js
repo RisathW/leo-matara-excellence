@@ -1,4 +1,4 @@
-// Renders the team cards from team-data.js into #exec-grid (home page) and #members-grid (members.html)
+// Renders the team cards from team-data.js into #exec-grid (home page), #all-exec-grid and #members-grid (members.html)
 (function () {
   const T = window.TEAM || { exec: [], members: [] };
   const person = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4"/><path d="M4 21c.6-4.2 3.9-6.5 8-6.5s7.4 2.3 8 6.5"/></svg>';
@@ -50,7 +50,7 @@
   }
 
   fill('exec-grid', T.exec, 'The officers will be announced soon.');
-  fill('more-exec-grid', T.moreExec || [], 'More executive members will be announced soon.');
+  fill('all-exec-grid', [...T.exec, ...(T.moreExec || [])], 'The executive committee will be announced soon.');
   fill('members-grid', T.members, 'Our full member list is coming soon.');
 
   const c = document.getElementById('member-count');
