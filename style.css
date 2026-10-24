@@ -902,3 +902,14 @@ main:focus{outline:0}
 .cause-card .tag{align-self:flex-start;margin-top:auto}
 @media(max-width:1100px){.gcauses,.cause-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:700px){.gcauses,.cause-grid,.stats.s3{grid-template-columns:1fr}.cause-card{padding:22px}}
+
+/* phone hero: the photo sits behind the text instead of in a card below it */
+@media(max-width:700px){
+  .hero{min-height:100vh;min-height:100svh}
+  .hero-media{position:absolute;inset:0;z-index:0;margin:0;height:100%;min-height:0;max-height:none;aspect-ratio:auto;border:0;border-radius:0;box-shadow:none}
+  .hero-media::after{display:block;background:linear-gradient(180deg,rgba(var(--bg-rgb),.3) 0,rgba(var(--bg-rgb),.6) 28%,rgba(var(--bg-rgb),.92) 62%,var(--bg) 100%)}
+  .hm{object-position:center 15%}
+  .logo-slide{padding:calc(var(--nav) + 8%) 22% 60%}
+  .hero-text{justify-content:flex-end;padding:0 20px 28px}
+  .dots{margin-top:18px}
+}
