@@ -8,7 +8,8 @@ const store = { get: k => { try { return localStorage.getItem(k); } catch { retu
 // list page: one card per edition
 const list = $('#mag-list');
 if (list) {
-  list.innerHTML = MAGS.length ? MAGS.map(m => `
+  const shown = MAGS.slice(0, +list.dataset.limit || MAGS.length); // the home page shows only the latest few
+  list.innerHTML = shown.length ? shown.map(m => `
       <a class="mag" href="magazine-viewer.html?issue=${encodeURIComponent(m.id)}">
         <img src="${pageSrc(m, 1)}" alt="${m.title} cover" loading="lazy">
         <div class="mag-body"><h3>${m.title}</h3><p>${m.date || ''}</p></div>
