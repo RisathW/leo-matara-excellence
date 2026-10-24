@@ -185,3 +185,10 @@ if (leoPanels.length) {
     if (canHover) p.addEventListener('mouseenter', () => openPanel(p));
   });
 }
+
+// causes page: show all causes or only the Lions global ones
+const causeBtns = $$('.cause-filter button');
+causeBtns.forEach(b => b.addEventListener('click', () => {
+  causeBtns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  $$('.cause-card').forEach(c => { c.hidden = b.dataset.f === 'global' && !c.dataset.global; });
+}));
