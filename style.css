@@ -913,3 +913,14 @@ main:focus{outline:0}
   .hero-text{justify-content:flex-end;padding:0 20px 28px}
   .dots{margin-top:18px}
 }
+
+/* social icons */
+.social a,.menu-foot a{display:inline-grid;place-items:center;width:42px;height:42px;padding:0;border:1px solid var(--line);border-radius:50%;color:var(--gold-d);transition:background .2s,color .2s,border-color .2s,transform .2s}
+.social a svg,.menu-foot a svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.social a svg .fill,.menu-foot a svg .fill{fill:currentColor;stroke:none}
+.social a:hover,.menu-foot a:hover{background:var(--gold);border-color:var(--gold);color:#04070b;transform:translateY(-2px)}
+.social{gap:12px}
+@media(max-width:900px){.menu-foot a{border-bottom:1px solid var(--line);padding:0}}
+.cta-social{margin:0;gap:10px;align-items:center}
+.cta-social a{width:38px;height:38px}
+@media(max-width:700px){.hero .cta{flex-wrap:wrap;gap:14px 18px}}
