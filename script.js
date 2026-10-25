@@ -24,9 +24,10 @@ const start = () => { loader.classList.add('done'); document.body.classList.add(
 // the logo draws itself on the first visit of a session; later pages only flash the loader
 let first = true;
 try { first = !sessionStorage.getItem('seen'); sessionStorage.setItem('seen', '1'); } catch {}
-const minShow = first && !reduceMotion ? 2300 : 250;
+// first visit: one full draw-and-erase of the line-art logo (about 3.6s). later pages: a shorter splash (about 1.6s)
+const minShow = reduceMotion ? 400 : first ? 3600 : 1600;
 addEventListener('load', () => setTimeout(start, Math.max(250, minShow - performance.now())));
-setTimeout(start, 4500); // fallback if load stalls
+setTimeout(start, minShow + 3000); // fallback if load stalls
 
 if ($('.hero')) {
 // hero slideshow: auto-advances, but can be paused (WCAG 2.2.2) and stays still for reduced-motion users
