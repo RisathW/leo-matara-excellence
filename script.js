@@ -96,6 +96,7 @@ const projects = [
   { file: 'district-orientation.jpg', title: 'Leo District 306 D8 · District Orientation' },
   { file: 'orientation-group-1.jpg', title: 'District Orientation · Group photo' },
   { file: 'orientation-group-2.jpg', title: 'District Orientation · Our members' },
+  { file: 'abhivandana-amadam-team.jpg', title: 'Leo Abhivandana & Amadam Sisila · Our team' },
   // { file: 'beach-cleanup.jpg', title: 'Beach clean-up' },
 ];
 const gallery = $('#gallery');
