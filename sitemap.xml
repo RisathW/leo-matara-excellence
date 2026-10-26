@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://yourclub.example/</loc><lastmod>2026-10-24</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url><loc>https://yourclub.example/</loc><lastmod>2026-10-24</lastmod><changefreq>weekly</changefreq><priority>1.0</priority><image:image><image:loc>https://yourclub.example/assets/og-image.jpg</image:loc></image:image></url>
   <url><loc>https://yourclub.example/about.html</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://yourclub.example/impact.html</loc><lastmod>2026-10-24</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://yourclub.example/causes.html</loc><lastmod>2026-10-24</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
@@ -9,7 +9,8 @@
   <url><loc>https://yourclub.example/join.html</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.9</priority></url>
   <url><loc>https://yourclub.example/members.html</loc><lastmod>2026-10-24</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://yourclub.example/projects.html</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://yourclub.example/project-district-orientation.html</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://yourclub.example/project-leo-abhivandana.html</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://yourclub.example/project-amadam-sisila.html</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://yourclub.example/project-district-orientation.html</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority><image:image><image:loc>https://yourclub.example/assets/gallery/orientation-group-1.jpg</image:loc></image:image><image:image><image:loc>https://yourclub.example/assets/gallery/orientation-group-2.jpg</image:loc></image:image><image:image><image:loc>https://yourclub.example/assets/gallery/district-orientation.jpg</image:loc></image:image></url>
+  <url><loc>https://yourclub.example/project-leo-abhivandana.html</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority><image:image><image:loc>https://yourclub.example/assets/gallery/abhivandana-amadam-team.jpg</image:loc></image:image><image:image><image:loc>https://yourclub.example/assets/gallery/leo-abhivandana.jpg</image:loc></image:image></url>
+  <url><loc>https://yourclub.example/project-amadam-sisila.html</loc><lastmod>2026-10-25</lastmod><changefreq>monthly</changefreq><priority>0.7</priority><image:image><image:loc>https://yourclub.example/assets/gallery/amadam-sisila-1.jpg</image:loc></image:image><image:image><image:loc>https://yourclub.example/assets/gallery/amadam-sisila-2.jpg</image:loc></image:image><image:image><image:loc>https://yourclub.example/assets/gallery/amadam-sisila-3.jpg</image:loc></image:image><image:image><image:loc>https://yourclub.example/assets/gallery/amadam-sisila-4.jpg</image:loc></image:image><image:image><image:loc>https://yourclub.example/assets/gallery/abhivandana-amadam-team.jpg</image:loc></image:image><image:image><image:loc>https://yourclub.example/assets/gallery/amadam-sisila.jpg</image:loc></image:image></url>
+  <url><loc>https://yourclub.example/president.html</loc><lastmod>2026-10-26</lastmod><changefreq>monthly</changefreq><priority>0.6</priority><image:image><image:loc>https://yourclub.example/assets/president.webp</image:loc></image:image></url>
 </urlset>

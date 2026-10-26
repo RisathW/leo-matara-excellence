@@ -3,7 +3,7 @@
   const T = window.TEAM || { exec: [], members: [] };
   const person = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4"/><path d="M4 21c.6-4.2 3.9-6.5 8-6.5s7.4 2.3 8 6.5"/></svg>';
 
-  function card(p) {
+  function card(p, href) {
     const a = document.createElement('article');
     a.className = 'tcard';
     const av = document.createElement('div');
@@ -29,9 +29,9 @@
       h.textContent = 'To be announced';
       h.className = 'tba';
     }
-    if (p.href) {
+    if (href) {
       const l = document.createElement('a');
-      l.href = p.href;
+      l.href = href;
       l.textContent = h.textContent;
       h.textContent = '';
       h.appendChild(l);
@@ -43,7 +43,7 @@
     return a;
   }
 
-  function fill(id, list, emptyMsg) {
+  function fill(id, list, emptyMsg, home) {
     const el = document.getElementById(id);
     if (!el) return;
     if (!list.length) {
@@ -54,10 +54,10 @@
       el.appendChild(m);
       return;
     }
-    list.forEach(p => el.appendChild(card(p)));
+    list.forEach(p => el.appendChild(card(p, home ? 'members.html' : p.href)));
   }
 
-  fill('exec-grid', T.exec, 'The officers will be announced soon.');
+  fill('exec-grid', T.exec, 'The officers will be announced soon.', true);
   fill('all-exec-grid', [...T.exec, ...(T.moreExec || [])], 'The executive committee will be announced soon.');
   fill('members-grid', T.members, 'Our full member list is coming soon.');
 

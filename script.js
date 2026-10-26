@@ -149,7 +149,7 @@ syncTheme();
 
 // join form: sends by email if CLUB_EMAIL is set, otherwise copies the details and opens the club's Instagram inbox
 const CLUB_EMAIL = '';
-const IG_DM = 'https://ig.me/m/leos.of.matara.excellence';
+const IG_DM = 'https://ig.me/m/matara.excellence.leos';
 if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
   e.preventDefault();
   const f = new FormData(e.target), status = $('#form-status');
@@ -164,12 +164,18 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
     status.textContent = 'Opening your email app…';
     return;
   }
+  const btn = e.target.querySelector('button[type=submit]');
+  if (btn.disabled) return;
+  btn.disabled = true;
+  setTimeout(() => { btn.disabled = false; }, 4000);
+  const w = window.open(IG_DM, '_blank', 'noopener');
   let copied = false;
   try { await navigator.clipboard.writeText(body); copied = true; } catch (err) {}
-  status.textContent = copied
-    ? 'Details copied. Paste them into the Instagram message that just opened.'
-    : 'Instagram is opening. Please type your name, age and phone number in the message.';
-  window.open(IG_DM, '_blank', 'noopener');
+  status.textContent = !w
+    ? 'Your browser blocked the Instagram window. Open ' + IG_DM + ' and send us your details.'
+    : copied
+      ? 'Details copied. Paste them into the Instagram message that just opened.'
+      : 'Instagram is opening. Please type your name, age and phone number in the message.';
 });
 
 
