@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yourclub.example/sitemap.xml
+Sitemap: https://risathw.github.io/leo-matara-excellence/sitemap.xml
