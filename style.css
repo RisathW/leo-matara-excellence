@@ -1001,3 +1001,5 @@ main:focus{outline:0}
 :root:not([data-theme="dark"]) .face{box-shadow:0 10px 30px rgba(11,18,38,.22)}
 :root:not([data-theme="dark"]) .flip-thumbs{background:rgba(246,247,250,.98)}
 :root:not([data-theme="dark"]) .flip-thumbs-grid button{color:var(--ink)}
+:root:not([data-theme="dark"]) .ev-rows .date{background:#fff;border:1px solid var(--line);box-shadow:0 4px 14px rgba(11,18,38,.08);color:#0B1226}
+:root:not([data-theme="dark"]) .ev-rows .date span{color:#0e9aa7}
