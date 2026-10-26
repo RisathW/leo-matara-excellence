@@ -12,7 +12,7 @@
 */
 window.TEAM = {
   exec: [
-    { title: "Leo", name: "Ramudi Liyanage", role: "President", photo: "assets/president.webp", cutout: true },
+    { title: "Leo", name: "Ramudi Liyanage", role: "President", photo: "assets/president.webp", cutout: true, href: "president.html" },
     { name: "", role: "Vice President", photo: "" },
     { name: "", role: "Secretary", photo: "" },
     { name: "", role: "Treasurer", photo: "" },

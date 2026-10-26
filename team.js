@@ -29,6 +29,14 @@
       h.textContent = 'To be announced';
       h.className = 'tba';
     }
+    if (p.href) {
+      const l = document.createElement('a');
+      l.href = p.href;
+      l.textContent = h.textContent;
+      h.textContent = '';
+      h.appendChild(l);
+      a.classList.add('link');
+    }
     const r = document.createElement('p');
     r.textContent = p.role || '';
     a.append(av, h, r);
