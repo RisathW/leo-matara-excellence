@@ -39,7 +39,7 @@ const show = i => {
   heads.forEach((el, k) => { el.classList.toggle('active', k === hi); el.setAttribute('aria-hidden', k === hi ? 'false' : 'true'); });
   media.forEach((el, k) => el.classList.toggle('active', k === hi));
   dots.forEach((d, k) => { d.classList.toggle('on', k === hi); d.toggleAttribute('aria-current', k === hi); });
-  no.textContent = String(hi + 1).padStart(2, '0');
+  if (no) no.textContent = String(hi + 1).padStart(2, '0');
 };
 const auto = () => { clearInterval(timer); if (!paused) timer = setInterval(() => show(hi + 1), 6000); };
 const setPaused = p => {
@@ -200,3 +200,18 @@ causeBtns.forEach(b => b.addEventListener('click', () => {
   causeBtns.forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   $$('.cause-card').forEach(c => { c.hidden = b.dataset.f === 'global' && !c.dataset.global; });
 }));
+
+// accent words (<em> in titles): small only when they wrap onto their own line
+(() => {
+  const ems = $$('h1 em, h2 em, .h1 em');
+  const fit = () => ems.forEach(em => {
+    em.classList.remove('wrapped');
+    const rects = em.getClientRects();
+    const heading = em.parentElement;
+    const lh = parseFloat(getComputedStyle(heading).lineHeight) || em.getBoundingClientRect().height;
+    if (rects.length && rects[0].top - heading.getBoundingClientRect().top > lh * 0.6) em.classList.add('wrapped');
+  });
+  fit();
+  addEventListener('resize', fit);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
