@@ -162,6 +162,7 @@ const validateJoin = form => {
   const rules = [
     ['name', v => v.trim().length >= 2, 'Enter your full name.'],
     ['age', v => /^\d+$/.test(v) && +v >= 12 && +v <= 30, 'Enter an age between 12 and 30.'],
+    ['email', v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim()), 'Enter a valid email address, for example name@gmail.com.'],
     ['phone', v => /^[0-9+ \-]{9,20}$/.test(v.trim()), 'Enter a phone number with 9 to 20 digits, for example 0771234567.']
   ];
   rules.forEach(([n, ok, msg]) => {
@@ -179,35 +180,52 @@ $$('#join-form input').forEach(i => i.addEventListener('input', () => {
 }));
 
 // join form: sends by email if CLUB_EMAIL is set, otherwise copies the details and opens the club's Instagram inbox
-const CLUB_EMAIL = '';
+const WEB3FORMS_KEY = 'aee02c62-6e71-45fc-b266-5611b861f6c3';
 const IG_DM = 'https://ig.me/m/matara.excellence.leos';
+const THANKS = 'Thank you for applying. We will review your application and look forward to meeting you.';
 if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
   e.preventDefault();
   if (!validateJoin(e.target)) return;
   const f = new FormData(e.target), status = $('#form-status');
-  const body = [
-    'Join request: Leo Club of Matara Excellence',
-    `Name: ${f.get('name')}`, `Age: ${f.get('age')}`, `Phone: ${f.get('phone')}`,
-    `School/Workplace: ${f.get('org')}`, `Interests: ${f.getAll('int').join(', ') || '-'}`,
-    `Why join: ${f.get('why') || '-'}`
-  ].join('\n');
-  if (CLUB_EMAIL) {
-    location.href = `mailto:${CLUB_EMAIL}?subject=${encodeURIComponent('Join Leo Club of Matara Excellence')}&body=${encodeURIComponent(body)}`;
-    status.textContent = 'Opening your email app…';
-    return;
-  }
   const btn = e.target.querySelector('button[type=submit]');
   if (btn.disabled) return;
   btn.disabled = true;
-  setTimeout(() => { btn.disabled = false; }, 4000);
-  const w = window.open(IG_DM, '_blank', 'noopener');
-  let copied = false;
-  try { await navigator.clipboard.writeText(body); copied = true; } catch (err) {}
-  status.textContent = !w
-    ? 'Your browser blocked the Instagram window. Open ' + IG_DM + ' and send us your details.'
-    : copied
-      ? 'Details copied. Paste them into the Instagram message that just opened.'
-      : 'Instagram is opening. Please type your name, age and phone number in the message.';
+  status.textContent = 'Sending your application…';
+  const interests = f.getAll('int').join(', ') || '-';
+  const body = [
+    'Join request: Leo Club of Matara Excellence',
+    `Name: ${f.get('name')}`, `Age: ${f.get('age')}`, `Phone: ${f.get('phone')}`, `Email: ${f.get('email')}`,
+    `School/Workplace: ${f.get('org') || '-'}`, `Interests: ${interests}`,
+    `Why join: ${f.get('why') || '-'}`
+  ].join('\n');
+  try {
+    if (f.get('botcheck')) throw new Error('spam');
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        subject: 'New Leo application: ' + f.get('name'),
+        from_name: 'Leo Club of Matara Excellence website',
+        replyto: f.get('email'),
+        name: f.get('name'), age: f.get('age'), phone: f.get('phone'), email: f.get('email'),
+        school_or_workplace: f.get('org') || '-', interests, why_join: f.get('why') || '-'
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'failed');
+    e.target.reset();
+    status.textContent = THANKS + ' We will be in touch soon.';
+    btn.disabled = false;
+  } catch (err) {
+    // fallback: copy the details and open the club's Instagram inbox
+    let copied = false;
+    try { await navigator.clipboard.writeText(body); copied = true; } catch (er) {}
+    status.textContent = 'We could not send your application online. ' + (copied
+      ? 'Your details are copied. To finish, open ' + IG_DM + ' and paste them into a message to us.'
+      : 'To finish, open ' + IG_DM + ' and send us your name, age, phone number and email.');
+    btn.disabled = false;
+  }
 });
 
 

@@ -40,7 +40,7 @@
 <script>document.documentElement.dataset.theme="dark";try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>.loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff}[data-theme="dark"] .loader{background:#04070b}.lg{width:clamp(170px,30vw,230px)}.lg img{display:block;width:100%;height:auto}.lg img.lg-dark{display:none}[data-theme="dark"] .lg img.lg-light{display:none}[data-theme="dark"] .lg img.lg-dark{display:block}.loader.done{opacity:0;visibility:hidden}</style>
 <link rel="stylesheet" href="style.css?v=75">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Who can join the Leo Club of Matara Excellence?","acceptedAnswer":{"@type":"Answer","text":"Anyone aged 12 to 30 who lives in or near Matara and wants to help their community. Leos aged 12 to 18 are called Alpha Leos, and those aged 18 to 30 are Omega Leos."}},{"@type":"Question","name":"Do I need any experience?","acceptedAnswer":{"@type":"Answer","text":"No. You learn by doing: planning projects, working in a team and meeting new people. Bring a few free hours and the wish to help."}},{"@type":"Question","name":"What do Leos actually do?","acceptedAnswer":{"@type":"Answer","text":"We plan, fund and run service projects for our community, working on causes such as children and youth, health, the environment and hunger relief. Our current events are listed on the Events page."}},{"@type":"Question","name":"How do I apply?","acceptedAnswer":{"@type":"Answer","text":"Fill in the short form on the Join page. It copies your details and opens our Instagram inbox, so you can send them to us in one tap. Someone from the club will get back to you."}},{"@type":"Question","name":"Who is the club connected to?","acceptedAnswer":{"@type":"Answer","text":"We are part of Leo District 306 D8 and Leo Multiple District 306, the youth side of Lions Clubs International. Our sponsor is the Lions Club of Matara Excellence."}}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Who can join the Leo Club of Matara Excellence?","acceptedAnswer":{"@type":"Answer","text":"Anyone aged 12 to 30 who lives in or near Matara and wants to help their community. Leos aged 12 to 18 are called Alpha Leos, and those aged 18 to 30 are Omega Leos."}},{"@type":"Question","name":"Do I need any experience?","acceptedAnswer":{"@type":"Answer","text":"No. You learn by doing: planning projects, working in a team and meeting new people. Bring a few free hours and the wish to help."}},{"@type":"Question","name":"What do Leos actually do?","acceptedAnswer":{"@type":"Answer","text":"We plan, fund and run service projects for our community, working on causes such as children and youth, health, the environment and hunger relief. Our current events are listed on the Events page."}},{"@type":"Question","name":"How do I apply?","acceptedAnswer":{"@type":"Answer","text":"Fill in the short form on the Join page. Your details go straight to the club by email. Someone from the club will get back to you."}},{"@type":"Question","name":"Who is the club connected to?","acceptedAnswer":{"@type":"Answer","text":"We are part of Leo District 306 D8 and Leo Multiple District 306, the youth side of Lions Clubs International. Our sponsor is the Lions Club of Matara Excellence."}}]}</script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://risathw.github.io/leo-matara-excellence/"},{"@type":"ListItem","position":2,"name":"Join","item":"https://risathw.github.io/leo-matara-excellence/join.html"}]}</script>
 </head>
 <body>
@@ -82,7 +82,7 @@
     <div>
             <h2>Three easy steps</h2>
       <ol class="steps">
-        <li><b>1</b><div><h3>Tell us about you</h3><p>Fill in the short form. A name, an age and a phone number is enough to start.</p></div></li>
+        <li><b>1</b><div><h3>Tell us about you</h3><p>Fill in the short form. A name, an age, a phone number and an email address are enough to start.</p></div></li>
         <li><b>2</b><div><h3>We message you</h3><p>Someone from the club will get in touch and answer anything you’re wondering about.</p></div></li>
         <li><b>3</b><div><h3>Come along</h3><p>Join us at our next event and see how we work. No pressure, no experience needed.</p></div></li>
       </ol>
@@ -94,6 +94,7 @@
         <label>Age<input name="age" type="number" min="12" max="30" required></label>
         <label>Phone / WhatsApp<input name="phone" type="tel" required maxlength="20" pattern="[0-9+ \-]{9,20}" title="Phone number, for example 0771234567" autocomplete="tel"></label>
       </div>
+      <label>Email<input name="email" type="email" required maxlength="100" autocomplete="email" inputmode="email"></label>
       <label>School / University / Workplace<input name="org" maxlength="100"></label>
       <fieldset>
         <legend>Interests</legend>
@@ -103,8 +104,9 @@
         <label class="ck"><input type="checkbox" name="int" value="Media &amp; design"> Media &amp; design</label>
       </fieldset>
       <label>Why do you want to join?<textarea name="why" rows="3" maxlength="600"></textarea></label>
+      <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" style="display:none" aria-hidden="true">
       <button class="btn" type="submit">Send application</button>
-      <p class="small" id="form-hint">Your details are copied and our Instagram inbox opens, so you can send them to us in one tap.</p>
+      <p class="small" id="form-hint">Your details go straight to the club. We will review your application and get back to you by email or phone.</p>
       <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
     </form>
   </div>
@@ -117,7 +119,7 @@
 <details><summary>Who can join the Leo Club of Matara Excellence?</summary><p>Anyone aged 12 to 30 who lives in or near Matara and wants to help their community. Leos aged 12 to 18 are called Alpha Leos, and those aged 18 to 30 are Omega Leos.</p></details>
 <details><summary>Do I need any experience?</summary><p>No. You learn by doing: planning projects, working in a team and meeting new people. Bring a few free hours and the wish to help.</p></details>
 <details><summary>What do Leos actually do?</summary><p>We plan, fund and run service projects for our community, working on causes such as children and youth, health, the environment and hunger relief. Our current events are listed on the Events page.</p></details>
-<details><summary>How do I apply?</summary><p>Fill in the short form on the Join page. It copies your details and opens our Instagram inbox, so you can send them to us in one tap. Someone from the club will get back to you.</p></details>
+<details><summary>How do I apply?</summary><p>Fill in the short form on the Join page. Your details go straight to the club by email. Someone from the club will get back to you.</p></details>
 <details><summary>Who is the club connected to?</summary><p>We are part of Leo District 306 D8 and Leo Multiple District 306, the youth side of Lions Clubs International. Our sponsor is the Lions Club of Matara Excellence.</p></details>
     </div>
   </div>
@@ -138,6 +140,6 @@
 
 <script src="team-data.js?v=2"></script>
 <script src="team.js?v=2"></script>
-<script src="script.js?v=27"></script>
+<script src="script.js?v=29"></script>
 </body>
 </html>
