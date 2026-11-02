@@ -147,11 +147,43 @@ themeBtn.addEventListener('click', () => {
 });
 syncTheme();
 
+// join form: specific inline error messages
+const validateJoin = form => {
+  $$('.field-error', form).forEach(n => n.remove());
+  let first = null;
+  const fail = (input, msg) => {
+    input.setAttribute('aria-invalid', 'true');
+    const p = document.createElement('span');
+    p.className = 'field-error';
+    p.textContent = msg;
+    input.closest('label').appendChild(p);
+    if (!first) first = input;
+  };
+  const rules = [
+    ['name', v => v.trim().length >= 2, 'Enter your full name.'],
+    ['age', v => /^\d+$/.test(v) && +v >= 12 && +v <= 30, 'Enter an age between 12 and 30.'],
+    ['phone', v => /^[0-9+ \-]{9,20}$/.test(v.trim()), 'Enter a phone number with 9 to 20 digits, for example 0771234567.']
+  ];
+  rules.forEach(([n, ok, msg]) => {
+    const i = form.elements[n];
+    i.removeAttribute('aria-invalid');
+    if (!ok(i.value)) fail(i, msg);
+  });
+  if (first) first.focus();
+  return !first;
+};
+$$('#join-form input').forEach(i => i.addEventListener('input', () => {
+  i.removeAttribute('aria-invalid');
+  const er = i.closest('label') && i.closest('label').querySelector('.field-error');
+  if (er) er.remove();
+}));
+
 // join form: sends by email if CLUB_EMAIL is set, otherwise copies the details and opens the club's Instagram inbox
 const CLUB_EMAIL = '';
 const IG_DM = 'https://ig.me/m/matara.excellence.leos';
 if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
   e.preventDefault();
+  if (!validateJoin(e.target)) return;
   const f = new FormData(e.target), status = $('#form-status');
   const body = [
     'Join request: Leo Club of Matara Excellence',
@@ -214,4 +246,31 @@ causeBtns.forEach(b => b.addEventListener('click', () => {
   fit();
   addEventListener('resize', fit);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+})();
+
+
+// tagline reveal: words move from muted to full colour one at a time as they cross a trigger line
+(() => {
+  const t = $('[data-words]');
+  if (!t) return;
+  const words = t.textContent.trim().split(/\s+/);
+  t.textContent = '';
+  const spans = words.map(w => {
+    const s = document.createElement('span');
+    s.className = 'tw';
+    s.textContent = w;
+    t.append(s, ' ');
+    return s;
+  });
+  if (reduceMotion) { spans.forEach(s => s.classList.add('on')); return; }
+  let queued = false;
+  const update = () => {
+    queued = false;
+    const line = innerHeight * 0.78;
+    spans.forEach(s => s.classList.toggle('on', s.getBoundingClientRect().top < line));
+  };
+  const req = () => { if (!queued) { queued = true; requestAnimationFrame(update); } };
+  addEventListener('scroll', req, { passive: true });
+  addEventListener('resize', req);
+  update();
 })();
