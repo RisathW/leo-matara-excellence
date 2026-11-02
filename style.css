@@ -1070,3 +1070,8 @@ h1 em,.h1 em{text-transform:inherit}
 /* stats: numbers and labels in the plain text colour (white on dark) */
 .stats b,:root:not([data-theme="dark"]) .stats b{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--ink);-webkit-text-fill-color:currentColor}
 .stats span{color:var(--ink)}
+
+/* thank-you video (portrait): capped width, Sinhala caption with roomy line height */
+.done-video{margin:28px 0 0;max-width:380px}
+.done-video video{display:block;width:100%;height:auto;border-radius:14px;background:#000}
+.done-video figcaption{margin-top:14px;font-size:1rem;line-height:1.9;color:var(--muted)}
