@@ -179,10 +179,9 @@ $$('#join-form input').forEach(i => i.addEventListener('input', () => {
   if (er) er.remove();
 }));
 
-// join form: sends by email if CLUB_EMAIL is set, otherwise copies the details and opens the club's Instagram inbox
+// join form: sends the application to the club through Web3Forms, then a confirmation email through EmailJS
 const WEB3FORMS_KEY = 'aee02c62-6e71-45fc-b266-5611b861f6c3';
 const EMAILJS = { service: 'service_e4dbg5t', template: 'template_djm2ta7', key: 'VbvrgfEaA8sxlCwAsIoJA' };
-const IG_DM = 'https://ig.me/m/matara.excellence.leos';
 const THANKS = 'Thank you for applying. We will review your application and look forward to meeting you.';
 if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -193,14 +192,9 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
   btn.disabled = true;
   status.textContent = 'Sending your application…';
   const interests = f.getAll('int').join(', ') || '-';
-  const body = [
-    'Join request: Leo Club of Matara Excellence',
-    `Name: ${f.get('name')}`, `Age: ${f.get('age')}`, `Phone: ${f.get('phone')}`, `Email: ${f.get('email')}`,
-    `School/Workplace: ${f.get('org') || '-'}`, `Interests: ${interests}`,
-    `Why join: ${f.get('why') || '-'}`
-  ].join('\n');
   try {
     if (f.get('botcheck')) throw new Error('spam');
+    if (!f.get('h-captcha-response')) throw new Error('captcha');
     const res = await fetch('https://api.web3forms.com/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -209,6 +203,7 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
         subject: 'New Leo application: ' + f.get('name'),
         from_name: 'Leo Club of Matara Excellence website',
         replyto: f.get('email'),
+        'h-captcha-response': f.get('h-captcha-response'),
         name: f.get('name'), age: f.get('age'), phone: f.get('phone'), email: f.get('email'),
         school_or_workplace: f.get('org') || '-', interests, why_join: f.get('why') || '-'
       })
@@ -226,16 +221,15 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
     }).catch(() => {});
     e.target.reset();
     status.textContent = THANKS + ' We have sent a confirmation to your email. We will be in touch soon.';
+    if (window.hcaptcha) try { window.hcaptcha.reset(); } catch (er) {}
     btn.disabled = false;
   } catch (err) {
-    // fallback: copy the details and open the club's Instagram inbox
-    let copied = false;
-    try { await navigator.clipboard.writeText(body); copied = true; } catch (er) {}
     console.error('Application send failed:', err);
-    const why = err && err.message && !['failed', 'spam'].includes(err.message) ? ' (' + err.message + ') ' : ' ';
-    status.textContent = 'We could not send your application online.' + why + (copied
-      ? 'Your details are copied. To finish, open ' + IG_DM + ' and paste them into a message to us.'
-      : 'To finish, open ' + IG_DM + ' and send us your name, age, phone number and email.');
+    const msg = err && err.message;
+    status.textContent = msg === 'captcha'
+      ? 'Please tick the "I am human" box before sending.'
+      : 'We could not send your application. ' + (msg && !['failed', 'spam'].includes(msg) ? '(' + msg + ') ' : '') + 'Please check your connection and try again.';
+    if (window.hcaptcha) try { window.hcaptcha.reset(); } catch (er) {}
     btn.disabled = false;
   }
 });
