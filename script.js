@@ -181,6 +181,7 @@ $$('#join-form input').forEach(i => i.addEventListener('input', () => {
 
 // join form: sends by email if CLUB_EMAIL is set, otherwise copies the details and opens the club's Instagram inbox
 const WEB3FORMS_KEY = 'aee02c62-6e71-45fc-b266-5611b861f6c3';
+const EMAILJS = { service: 'service_e4dbg5t', template: 'template_djm2ta7', key: 'VbvrgfEaA8sxlCwAsIoJA' };
 const IG_DM = 'https://ig.me/m/matara.excellence.leos';
 const THANKS = 'Thank you for applying. We will review your application and look forward to meeting you.';
 if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
@@ -214,8 +215,17 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.message || 'failed');
+    // confirmation email to the applicant (failure here does not affect the application)
+    fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_id: EMAILJS.service, template_id: EMAILJS.template, user_id: EMAILJS.key,
+        template_params: { to_email: f.get('email'), first_name: String(f.get('name')).trim().split(/\s+/)[0], name: f.get('name') }
+      })
+    }).catch(() => {});
     e.target.reset();
-    status.textContent = THANKS + ' We will be in touch soon.';
+    status.textContent = THANKS + ' We have sent a confirmation to your email. We will be in touch soon.';
     btn.disabled = false;
   } catch (err) {
     // fallback: copy the details and open the club's Instagram inbox
