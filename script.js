@@ -181,7 +181,7 @@ $$('#join-form input').forEach(i => i.addEventListener('input', () => {
 
 // join form: sends the application to the club through Web3Forms, then a confirmation email through EmailJS
 const WEB3FORMS_KEY = 'aee02c62-6e71-45fc-b266-5611b861f6c3';
-const EMAILJS = { service: 'service_e4dbg5t', template: 'template_djm2ta7', key: 'VbvrgfEaA8sxlCwAsIoJA' };
+const EMAILJS = { service: 'service_e4dbg5t', template: 'template_djm2ta7', key: 'hn-UK-87gvUCz6VR-' };
 const THANKS = 'Thank you for applying. We will review your application and look forward to meeting you.';
 if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -212,7 +212,7 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
     if (!data.success) throw new Error(data.message || 'failed');
     // confirmation email to the applicant (the application itself is already sent)
     let mailOk = false, mailWhy = '';
-    try {
+    if (!EMAILJS.key) { mailWhy = 'skip'; } else try {
       const mr = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -224,11 +224,13 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
       mailOk = mr.ok;
       if (!mr.ok) mailWhy = (await mr.text()).slice(0, 160);
     } catch (er) { mailWhy = String(er && er.message || er); }
-    if (!mailOk) console.error('Confirmation email failed:', mailWhy);
+    if (!mailOk && mailWhy !== 'skip') console.error('Confirmation email failed:', mailWhy);
     e.target.reset();
     status.textContent = THANKS + (mailOk
       ? ' We have sent a confirmation to your email. We will be in touch soon.'
-      : ' We could not send a confirmation email' + (mailWhy ? ' (' + mailWhy + ')' : '') + ', but your application has reached us and we will be in touch soon.');
+      : mailWhy === 'skip'
+        ? ' Your application has reached us and we will be in touch soon.'
+        : ' We could not send a confirmation email' + (mailWhy ? ' (' + mailWhy + ')' : '') + ', but your application has reached us and we will be in touch soon.');
     if (window.hcaptcha) try { window.hcaptcha.reset(); } catch (er) {}
     btn.disabled = false;
   } catch (err) {
