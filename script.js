@@ -231,7 +231,9 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
     // fallback: copy the details and open the club's Instagram inbox
     let copied = false;
     try { await navigator.clipboard.writeText(body); copied = true; } catch (er) {}
-    status.textContent = 'We could not send your application online. ' + (copied
+    console.error('Application send failed:', err);
+    const why = err && err.message && !['failed', 'spam'].includes(err.message) ? ' (' + err.message + ') ' : ' ';
+    status.textContent = 'We could not send your application online.' + why + (copied
       ? 'Your details are copied. To finish, open ' + IG_DM + ' and paste them into a message to us.'
       : 'To finish, open ' + IG_DM + ' and send us your name, age, phone number and email.');
     btn.disabled = false;
