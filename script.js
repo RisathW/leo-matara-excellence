@@ -210,17 +210,25 @@ if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
     });
     const data = await res.json();
     if (!data.success) throw new Error(data.message || 'failed');
-    // confirmation email to the applicant (failure here does not affect the application)
-    fetch('https://api.emailjs.com/api/v1.0/email/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        service_id: EMAILJS.service, template_id: EMAILJS.template, user_id: EMAILJS.key,
-        template_params: { to_email: f.get('email'), first_name: String(f.get('name')).trim().split(/\s+/)[0], name: f.get('name') }
-      })
-    }).catch(() => {});
+    // confirmation email to the applicant (the application itself is already sent)
+    let mailOk = false, mailWhy = '';
+    try {
+      const mr = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: EMAILJS.service, template_id: EMAILJS.template, user_id: EMAILJS.key,
+          template_params: { to_email: f.get('email'), email: f.get('email'), first_name: String(f.get('name')).trim().split(/\s+/)[0], name: f.get('name') }
+        })
+      });
+      mailOk = mr.ok;
+      if (!mr.ok) mailWhy = (await mr.text()).slice(0, 160);
+    } catch (er) { mailWhy = String(er && er.message || er); }
+    if (!mailOk) console.error('Confirmation email failed:', mailWhy);
     e.target.reset();
-    status.textContent = THANKS + ' We have sent a confirmation to your email. We will be in touch soon.';
+    status.textContent = THANKS + (mailOk
+      ? ' We have sent a confirmation to your email. We will be in touch soon.'
+      : ' We could not send a confirmation email' + (mailWhy ? ' (' + mailWhy + ')' : '') + ', but your application has reached us and we will be in touch soon.');
     if (window.hcaptcha) try { window.hcaptcha.reset(); } catch (er) {}
     btn.disabled = false;
   } catch (err) {
