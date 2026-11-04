@@ -1,6 +1,6 @@
-// Renders the team cards from team-data.js into #exec-grid (home page), #all-exec-grid and #members-grid (members.html)
+// Renders the team cards from team-data.js into #exec-grid (home and About pages), #board-grid, #directors-grid and #members-list (members.html)
 (function () {
-  const T = window.TEAM || { exec: [], members: [] };
+  const T = window.TEAM || { exec: [], board: [], directors: [] };
   const person = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4"/><path d="M4 21c.6-4.2 3.9-6.5 8-6.5s7.4 2.3 8 6.5"/></svg>';
 
   function card(p, href) {
@@ -11,7 +11,7 @@
     if (p.photo) {
       const img = new Image();
       img.src = p.photo;
-      img.alt = p.name ? `${p.name}, ${p.role}` : p.role;
+      img.alt = p.name ? `${p.title === undefined ? 'Leo' : p.title} ${p.name}, ${p.role}`.replace(/^ /, '') : p.role;
       img.loading = 'lazy';
       img.decoding = 'async';
       img.width = 128;
@@ -24,7 +24,8 @@
     }
     const h = document.createElement('h3');
     if (p.name) {
-      h.textContent = (p.title ? p.title + ' ' : '') + p.name;
+      const title = p.title === undefined ? 'Leo' : p.title;
+      h.textContent = (title ? title + ' ' : '') + p.name;
     } else {
       h.textContent = 'To be announced';
       h.className = 'tba';
@@ -58,10 +59,13 @@
   }
 
   fill('exec-grid', T.exec, 'The officers will be announced soon.', true);
-  fill('all-exec-grid', [...T.exec, ...(T.moreExec || [])], 'The executive committee will be announced soon.');
-  fill('members-grid', T.members, 'Our full member list is coming soon.');
+  fill('board-grid', T.board || [], 'The Executive Board will be announced soon.');
+  fill('directors-grid', T.directors || [], 'The Board of Directors will be announced soon.');
+
+  const ml = document.getElementById('members-list');
+  if (ml) (T.members || []).forEach(n => { const li = document.createElement('li'); li.textContent = 'Leo ' + n; ml.appendChild(li); });
 
   const c = document.getElementById('member-count');
-  const total = (T.exec || []).length + (T.moreExec || []).length + T.members.length;
+  const total = (T.board || []).length + (T.directors || []).length + (T.members || []).length;
   if (c) c.textContent = total ? `${total} people listed.` : '';
 })();

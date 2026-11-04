@@ -1095,3 +1095,29 @@ h1,h2,h3,.h1{text-wrap:balance}
 .legal-sec .wrap>*{max-width:680px}
 .legal-sec p{margin-top:12px}
 .foot .small a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+
+/* members name list */
+.member-list{list-style:none;margin:32px 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:12px 24px}
+.member-list li{padding:12px 0;border-bottom:1px solid var(--line);font-size:.875rem;line-height:1.4;color:var(--ink)}
+@media(max-width:1000px){.member-list{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.member-list{grid-template-columns:repeat(2,1fr);gap:8px 16px}}
+@media(max-width:420px){.member-list{grid-template-columns:1fr}}
+
+/* phone: president's message stacks (must come after the desktop .pmsg overrides) */
+@media(max-width:760px){
+  .pmsg{grid-template-columns:1fr;gap:24px}
+  .pmsg-photo{max-width:260px;width:100%;margin:0 auto;align-self:center}
+  .pmsg-photo img{max-height:420px;margin:0 auto}
+  .pmsg-body p{line-height:1.75}
+}
+
+/* phone: larger tap areas for small text links (padding on inline links grows the hit area, not the line) */
+@media(max-width:760px),(pointer:coarse){
+  .breadcrumb a{display:inline-block;padding:10px 4px}
+  p a:not(.btn):not(.link-arrow):not(.pill):not(.inline),li a:not(.btn):not(.inline),h3 a,.foot .small a,.crumb{padding-block:12px}
+}
+@media(max-width:760px),(pointer:coarse){
+  a.inline,.social a,.menu-foot a{padding-block:0}
+  a.inline{position:relative}
+  a.inline::after{content:"";position:absolute;left:0;right:0;top:-12px;bottom:-12px}
+}
