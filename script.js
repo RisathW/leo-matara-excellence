@@ -20,7 +20,7 @@ addEventListener('resize', () => { if (innerWidth > 980) closeMenu(); });
 // load + reveal animations
 document.documentElement.classList.add('js');
 const loader = $('#loader');
-const start = () => { loader.classList.add('done'); document.body.classList.add('ready'); };
+const start = () => { loader.classList.add('done'); document.body.classList.add('ready'); document.dispatchEvent(new Event('leo-ready')); };
 // the logo draws itself on the first visit of a session; later pages only flash the loader
 let first = true;
 try { first = !sessionStorage.getItem('seen'); sessionStorage.setItem('seen', '1'); } catch {}
@@ -119,7 +119,7 @@ reveals.forEach(sec => $$('.pillar-list article,.cards article,.timeline li,.gal
   .forEach((el, i) => el.style.setProperty('--i', i % 6)));
 if ('IntersectionObserver' in window) {
   const ro = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) { e.target.classList.add('in'); ro.unobserve(e.target); }
+    if (e.isIntersecting) { const go = () => e.target.classList.add('in'); document.body.classList.contains('ready') ? go() : document.addEventListener('leo-ready', go, { once: true }); ro.unobserve(e.target); }
   }), { threshold: .12 });
   reveals.forEach(r => ro.observe(r));
 } else reveals.forEach(r => r.classList.add('in'));
