@@ -1242,3 +1242,8 @@ main:has(.chap) .sec:has(>.chap.solo){padding:clamp(32px,4vw,56px) 0}
   main:has(.chap) .pillars3 article p{max-width:calc(100% - 56px)}
 }
 main:has(.chap) .chap+.wrap{margin-top:clamp(20px,3vw,32px)}
+.foot-contact{display:flex;flex-wrap:wrap;gap:0 24px;margin:0}
+.foot-contact a{display:inline-flex;align-items:center;padding-block:10px;color:var(--ink);font-weight:500}
+.foot-contact a:hover{color:var(--gold-d)}
+.join-contact{margin-top:24px;color:var(--muted)}
+.form-contact{margin-top:8px;color:var(--muted)}
