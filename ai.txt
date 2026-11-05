@@ -1,0 +1,5 @@
+# AI crawler policy for the Leo Club of Matara Excellence website
+# Public pages may be read and summarised, with a link back to the source.
+User-Agent: *
+Allow: /
+Disallow: /assets/email/

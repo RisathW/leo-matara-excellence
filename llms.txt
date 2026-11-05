@@ -1,0 +1,13 @@
+# Leo Club of Matara Excellence
+
+> A youth service club in Leo District 306 D8, part of Leo Multiple District 306 and Lions Clubs International, based in Matara, Sri Lanka. Members are aged 12 to 30. We are sponsored by the Lions Club of Matara Excellence.
+
+## Pages
+- [Home](https://risathw.github.io/leo-matara-excellence/index.html): who we are and what we do
+- [About](https://risathw.github.io/leo-matara-excellence/about.html): our story and where we fit in
+- [Projects](https://risathw.github.io/leo-matara-excellence/projects.html): District Orientation, Leo Abhivandana, Amadam Sisila
+- [Team](https://risathw.github.io/leo-matara-excellence/members.html): Executive Board, Board of Directors and members
+- [The Lions story](https://risathw.github.io/leo-matara-excellence/history-lions.html): history of Lions Clubs International
+- [The Leo story](https://risathw.github.io/leo-matara-excellence/history-leos.html): history of the Leo Club Program
+- [Leos of Sri Lanka and Maldives](https://risathw.github.io/leo-matara-excellence/leo-md306.html): the national Leo family
+- [Join](https://risathw.github.io/leo-matara-excellence/join.html): how to become a Leo
