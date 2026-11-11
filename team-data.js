@@ -34,7 +34,7 @@ window.TEAM = {
   directors: [
     { name: "Viththarachchige Geemeth Manvidu Hewa", role: "Editorial Director", photo: "" },
     { name: "Janiru Oshan Rubasinghe", role: "Director of PR", photo: "" },
-    { name: "Sithika Dilmith Karasinghe Arachchi", role: "Director of Fundraising", photo: "" },
+    { name: "Jayaweera Liyana Patabadige Sasindu Nimsara", role: "Director of Fundraising", photo: "" },
     { name: "Nadithya Namaljie Abeysiri Narayana Wanigarathne", role: "Director of Education", photo: "" },
     { name: "Risath Athsara Wijethunga", role: "Director of IT", photo: "" },
     { name: "Vithana Abeywickrama Isum Ayuka", role: "Director of Joint Projects", photo: "" },
@@ -63,7 +63,6 @@ window.TEAM = {
     "Isumi Sehansa Gunawardhana",
     "J.M. Sanuji Nihara Udayangi",
     "Jayasekara Vithanage Nimlini Sandesna Jayasekara",
-    "Jayaweera Liyana Patabadige Sasindu Nimsara",
     "K.G. Dinumi Navodya",
     "Kithmi Wickramaarachchi",
     "M. Tareesha Namindi De Silva",
