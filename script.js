@@ -10,12 +10,20 @@ const setMenu = open => {
   btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   document.documentElement.classList.toggle('menu-open', open);
 };
-const closeMenu = () => setMenu(false);
+const closeMenu = () => { setMenu(false); $$('.dd.open').forEach(d => { d.classList.remove('open'); d.firstElementChild.setAttribute('aria-expanded', 'false'); }); };
 btn.setAttribute('aria-label', 'Open menu');
 btn.addEventListener('click', () => setMenu(!links.classList.contains('open')));
 links.addEventListener('click', e => { if (e.target.closest('a')) closeMenu(); });
 addEventListener('keydown', e => { if (e.key === 'Escape' && links.classList.contains('open')) { closeMenu(); btn.focus(); } });
 addEventListener('resize', () => { if (innerWidth > 980) closeMenu(); });
+// History dropdown: on phones the label opens and closes the topic list
+$$('.dd-t').forEach(t => {
+  const dd = t.parentElement;
+  t.setAttribute('aria-expanded', 'false');
+  const flip = () => { const o = dd.classList.toggle('open'); t.setAttribute('aria-expanded', String(o)); };
+  t.addEventListener('click', () => { if (innerWidth <= 980) flip(); });
+  t.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && innerWidth <= 980) { e.preventDefault(); flip(); } });
+});
 
 // load + reveal animations
 document.documentElement.classList.add('js');
@@ -308,3 +316,40 @@ causeBtns.forEach(b => b.addEventListener('click', () => {
   addEventListener('resize', req);
   update();
 })();
+
+// suggest-a-project form (Project ideas page): goes to the club through the same Web3Forms inbox as the join form
+if ($('#suggest-form')) $('#suggest-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const form = e.target, f = new FormData(form), status = $('#suggest-status'), btn = form.querySelector('button[type=submit]');
+  const missing = ['name', 'contact', 'place', 'need'].find(n => !String(f.get(n) || '').trim());
+  if (missing) { status.textContent = 'Please fill in every box so we can understand and reply.'; form.elements[missing].focus(); return; }
+  if (btn.disabled) return;
+  btn.disabled = true;
+  status.textContent = 'Sending your suggestion…';
+  try {
+    if (f.get('botcheck')) throw new Error('spam');
+    if (!f.get('h-captcha-response')) throw new Error('captcha');
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_KEY,
+        subject: 'Project suggestion: ' + f.get('place'),
+        from_name: 'Leo Club of Matara Excellence website',
+        'h-captcha-response': f.get('h-captcha-response'),
+        name: f.get('name'), contact: f.get('contact'), who_or_where: f.get('place'), what_is_needed: f.get('need')
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.message || 'failed');
+    form.reset();
+    status.textContent = 'Thank you. Your suggestion has reached the club and we will get back to you.';
+  } catch (err) {
+    const msg = err && err.message;
+    status.textContent = msg === 'captcha'
+      ? 'Please tick the "I am human" box before sending.'
+      : 'We could not send your suggestion. ' + (msg && !['failed', 'spam'].includes(msg) ? '(' + msg + ') ' : '') + 'Please check your connection and try again.';
+  }
+  if (window.hcaptcha) try { window.hcaptcha.reset(); } catch (er) {}
+  btn.disabled = false;
+});
