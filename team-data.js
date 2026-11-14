@@ -11,37 +11,39 @@
 */
 window.TEAM = {
   exec: [
-    { title: "Leo", name: "Ramudi Liyanage", role: "President", photo: "assets/president.webp", cutout: true, href: "president.html" },
-    { name: "Veneesa Sayori Rathnayake", role: "Vice President", photo: "" },
-    { name: "Oshini Rathnasinghe", role: "Secretary", photo: "" },
-    { name: "Sathil Nethmira Punchihewa", role: "Treasurer", photo: "" },
-    { title: "Lion", name: "Ravindu Runage", role: "Advisor", photo: "" }
+    { title: "Leo", name: "Ramudi Liyanage", role: "President", photo: "assets/team/ramudi.webp", href: "president.html" },
+    { name: "Veneesa Sayori Rathnayake", role: "Vice President", photo: "assets/team/veneesa.webp" },
+    { name: "Oshini Rathnasinghe", role: "Secretary", photo: "assets/team/oshini.webp" },
+    { name: "Sathil Nethmira Punchihewa", role: "Treasurer", photo: "assets/team/sathil.webp" },
+    { title: "Lion", name: "Ravindu Runage", role: "Advisor", photo: "assets/team/ravindu.webp" }
   ],
   board: [
-    { title: "Lion", name: "Ravindu Runage", role: "Club Advisor", photo: "" },
-    { title: "Leo", name: "Ramudi Liyanage", role: "President", photo: "assets/president.webp", cutout: true, href: "president.html" },
-    { name: "Oshini Rathnasinghe", role: "Secretary", photo: "" },
-    { name: "Sathil Nethmira Punchihewa", role: "Treasurer", photo: "" },
-    { name: "Veneesa Sayori Rathnayake", role: "1st Vice President", photo: "" },
-    { name: "Gavinu Imajith Kodithuwakku Arachchi", role: "2nd Vice President", photo: "" },
+    { title: "Lion", name: "Ravindu Runage", role: "Club Advisor", photo: "assets/team/ravindu.webp" },
+    { title: "Leo", name: "Ramudi Liyanage", role: "President", photo: "assets/team/ramudi.webp", href: "president.html" },
+    { name: "Oshini Rathnasinghe", role: "Secretary", photo: "assets/team/oshini.webp" },
+    { name: "Sathil Nethmira Punchihewa", role: "Treasurer", photo: "assets/team/sathil.webp" },
+    { name: "Veneesa Sayori Rathnayake", role: "1st Vice President", photo: "assets/team/veneesa.webp" },
+    { name: "Gavinu Imajith Kodithuwakku Arachchi", role: "2nd Vice President", photo: "assets/team/gavinu.webp" },
     { name: "Senumi Yuhansa Vithanage", role: "Assistant Secretary", photo: "" },
     { name: "Rasali Omalka Ahangama Withanage", role: "Assistant Secretary", photo: "" },
-    { name: "Polwatta Gallage Sanuk Randeepa", role: "Assistant Treasurer", photo: "" },
-    { name: "D.M Chathuni Nuwangi Herath", role: "Chief Coordinator, Multimedia", photo: "" },
-    { name: "Nemin Sasmitha Palliyaguruge", role: "Chief Coordinator, Project", photo: "" },
-    { name: "P.P. Sedna Dehemi Dharana", role: "Chief Coordinator, Membership", photo: "" }
+    { name: "Polwatta Gallage Sanuk Randeepa", role: "Assistant Treasurer", photo: "assets/team/sanuk.webp" },
+    { name: "D.M Chathuni Nuwangi Herath", role: "Chief Coordinator, Multimedia", photo: "assets/team/chathuni.webp" },
+    { name: "Nemin Sasmitha Palliyaguruge", role: "Chief Coordinator, Project", photo: "assets/team/nemin.webp" },
+    { name: "Paramee Anudima Wijewickrama", role: "Chief Coordinator, Service", photo: "assets/team/paramee.webp" },
+    { name: "P.P. Sedna Dehemi Dharana", role: "Chief Coordinator, Reporting & Administration", photo: "" },
+    { name: "T.D. Vinuka Ransath Pulsitha", role: "Chief Coordinator, Membership", photo: "" }
   ],
   directors: [
-    { name: "Viththarachchige Geemeth Manvidu Hewa", role: "Editorial Director", photo: "" },
-    { name: "Janiru Oshan Rubasinghe", role: "Director of PR", photo: "" },
-    { name: "Jayaweera Liyana Patabadige Sasindu Nimsara", role: "Director of Fundraising", photo: "" },
+    { name: "Viththarachchige Geemeth Manvidu Hewa", role: "Editorial Director", photo: "assets/team/geemeth.webp" },
+    { name: "Janiru Oshan Rubasinghe", role: "Director of PR", photo: "assets/team/janiru.webp" },
+    { name: "Jayaweera Liyana Patabadige Sasindu Nimsara", role: "Director of Fundraising", photo: "assets/team/sasindu.webp" },
     { name: "Nadithya Namaljie Abeysiri Narayana Wanigarathne", role: "Director of Education", photo: "" },
-    { name: "Risath Athsara Wijethunga", role: "Director of IT", photo: "" },
+    { name: "Risath Athsara Wijethunga", role: "Director of IT", photo: "assets/team/risath.webp" },
     { name: "Vithana Abeywickrama Isum Ayuka", role: "Director of Joint Projects", photo: "" },
     { name: "Rashmika Sithumini Kodikara", role: "Director of Sports & Recreation", photo: "" },
-    { name: "K.H.G. Yasasmi Himasha Theekshani Gamage", role: "Director of Service", photo: "" },
+    { name: "K.H.G. Yasasmi Himasha Theekshani Gamage", role: "Director of Service", photo: "assets/team/yasasmi.webp" },
     { name: "Tilmi P P Vidanage", role: "Director of International Relations", photo: "" },
-    { name: "Loku Bogahawattage Vinudi Sahansa", role: "Director of Fellowship", photo: "" }
+    { name: "Loku Bogahawattage Vinudi Sahansa", role: "Director of Fellowship", photo: "assets/team/vinudi.webp" }
   ],
   members: [
     "B.M. Induwara Sadew Akash",
@@ -77,13 +79,13 @@ window.TEAM = {
     "Osala Jayasinghe Karunaratne",
     "Osheedh Irun Shanuka Jansz",
     "P.L. Tharindu Malshan",
-    "Paramee Anudima Wijewickrama",
     "Parana Vidana Arachchige Jithmi Himasha",
     "Pramukha Gallage",
     "Prathapa Sooriya Arachchige Ovini Vindya Dayananda",
     "Prathapage Nethasha Mansari Wijesinghe",
     "R.A. Dulina Senhas",
     "Ranhoti Bandaralage Thihansa Sanidi",
+    "Rathnayake Mudiyanselage Yeneesa Sayori Rathnayake",
     "Risandi Ramasinghe",
     "S.A. Chamindu Dewmith",
     "S.D. Ganuli Hasithma",
@@ -91,13 +93,12 @@ window.TEAM = {
     "Serasinghe Pathiranage Shaweri Nikasha",
     "Shaniya Bhagya Galhenage",
     "Sinali Tharumila Sudusinghe",
-    "T.D. Vinuka Ransath Pulsitha",
+    "Sithika Dilmith Karasinghe Arachchi",
     "T.W. Hewawitharana",
     "Tashmitha Dulmina Hewavitharana",
     "Vidana Gamage Hithasi Devindi",
     "W.A.K. Chathuni Nethmini Priyankara",
     "W.K. Nulari Sasandi",
-    "W.L. Tharushi Kavindya",
-    "Yashini Anandi Ranasinghe"
+    "W.L. Tharushi Kavindya"
   ]
 };
