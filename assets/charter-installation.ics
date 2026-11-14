@@ -5,12 +5,12 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
 UID:charter-installation-2026@leo-matara-excellence
-DTSTAMP:20261112T000000Z
+DTSTAMP:20261114T000000Z
 DTSTART:20261122T083000Z
-DTEND:20261122T113000Z
-SUMMARY:Charter Installation Ceremony\, Leo Club of Matara Excellence
+DTEND:20261122T173000Z
+SUMMARY:EXCELLENCE '26: Charter Installation Ceremony\, Leo Club of Matara Excellence
 LOCATION:Weligama Bay Marriott Resort & Spa\, Weligama\, Sri Lanka
-DESCRIPTION:Charter installation ceremony of the Leo Club of Matara Excellence. 2 PM onwards. https://risathw.github.io/leo-matara-excellence/events.html
+DESCRIPTION:Charter installation ceremony of the Leo Club of Matara Excellence. Ceremony from 2 PM\, gala dinner buffet and DJ night from 6 PM. Theme: gold\, emerald green and black. https://risathw.github.io/leo-matara-excellence/events.html
 URL:https://risathw.github.io/leo-matara-excellence/events.html#installation
 END:VEVENT
 END:VCALENDAR
