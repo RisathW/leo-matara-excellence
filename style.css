@@ -1395,3 +1395,7 @@ main:has(.chap) .chap+.wrap{margin-top:clamp(20px,3vw,32px)}
 .idea-peek i{display:block;height:8px;border-radius:4px;background:#e8eaf0;margin-bottom:10px}
 .idea-peek i.s{width:60%}
 @media(max-width:900px){.idea-peek{justify-self:start}}
+/* team page: group photo above each board */
+.team-group{margin:20px 0 32px;border-radius:16px;overflow:hidden;border:1px solid var(--line);aspect-ratio:3/2;max-width:860px}
+.team-group img{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 10%}
+@media(max-width:600px){.team-group{margin-bottom:24px;border-radius:12px}}
