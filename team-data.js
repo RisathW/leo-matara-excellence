@@ -17,10 +17,10 @@ window.TEAM = {
     { name: "Veneesa Sayori Rathnayake", role: "Vice President", photo: "assets/team/veneesa.webp" },
     { name: "Oshini Rathnasinghe", role: "Secretary", photo: "assets/team/oshini.webp" },
     { name: "Sathil Nethmira Punchihewa", role: "Treasurer", photo: "assets/team/sathil.webp" },
-    { title: "Lion", name: "Ravindu Runage", role: "Advisor", photo: "assets/team/ravindu.webp" }
+    { title: "Lion", name: "Ravindu Runage", role: "Advisor", photo: "assets/team/ravindu.webp", href: "advisor.html" }
   ],
   board: [
-    { title: "Lion", name: "Ravindu Runage", role: "Club Advisor", photo: "assets/team/ravindu.webp" },
+    { title: "Lion", name: "Ravindu Runage", role: "Club Advisor", photo: "assets/team/ravindu.webp", href: "advisor.html" },
     { title: "Leo", name: "Ramudi Liyanage", role: "President", photo: "assets/team/ramudi.webp", href: "president.html" },
     { name: "Oshini Rathnasinghe", role: "Secretary", photo: "assets/team/oshini.webp" },
     { name: "Sathil Nethmira Punchihewa", role: "Treasurer", photo: "assets/team/sathil.webp" },
