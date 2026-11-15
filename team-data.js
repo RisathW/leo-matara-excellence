@@ -10,6 +10,8 @@
   - title:     prefix shown before the name. Leave it out for "Leo" (the default). Use "Lion" for a Lion, or "" for none.
 */
 window.TEAM = {
+  // how many of the people listed are full members; the rest are shown as prospective members in the count line
+  confirmed: 55,
   exec: [
     { title: "Leo", name: "Ramudi Liyanage", role: "President", photo: "assets/team/ramudi.webp", href: "president.html" },
     { name: "Veneesa Sayori Rathnayake", role: "Vice President", photo: "assets/team/veneesa.webp" },

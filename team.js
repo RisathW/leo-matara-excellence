@@ -67,5 +67,7 @@
 
   const c = document.getElementById('member-count');
   const total = (T.board || []).length + (T.directors || []).length + (T.members || []).length;
-  if (c) c.textContent = total ? `${total} people listed.` : '';
+  if (c) c.textContent = !total ? '' : (T.confirmed && T.confirmed < total)
+    ? `${total} people listed: ${T.confirmed} are members and the other ${total - T.confirmed} are prospective members.`
+    : `${total} people listed.`;
 })();
