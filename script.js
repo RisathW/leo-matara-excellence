@@ -188,7 +188,7 @@ $$('#join-form input').forEach(i => i.addEventListener('input', () => {
 }));
 
 // join form: sends the application to the club through Web3Forms, then a confirmation email through EmailJS
-const WEB3FORMS_KEY = 'aee02c62-6e71-45fc-b266-5611b861f6c3';
+const WEB3FORMS_KEY = '272a6702-514c-47e2-a97c-da5f78d539a1'; // Become a Leo applications and project suggestions go to this inbox
 const EMAILJS = { service: 'service_e4dbg5t', template: 'template_djm2ta7', key: 'hn-UK-87gvUCz6VR-' };
 const THANKS = 'Thank you for applying. We will review your application and look forward to meeting you.';
 if ($('#join-form')) $('#join-form').addEventListener('submit', async e => {
