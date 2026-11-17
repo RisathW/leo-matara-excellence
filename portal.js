@@ -2,7 +2,7 @@
 // Data lives in Firebase (Firestore). What each person may read or change is enforced
 // by the security rules in Firebase, not by this file.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
@@ -48,15 +48,32 @@ const show = id => views.forEach(v => { $('#' + v).hidden = v !== id; });
 
 let me = null, user = null, officer = false;
 
+// plain-language reasons for sign-in problems; the code is shown too so it can be looked up
+const AUTH_WHY = {
+  'auth/popup-blocked': 'The browser blocked the Google window. Allow pop-ups for this site and try again.',
+  'auth/popup-closed-by-user': 'The Google window closed before sign-in finished. If you did not close it, your browser may be blocking third-party cookies for this site; allow them, or try another browser.',
+  'auth/cancelled-popup-request': 'Another sign-in window was already open. Please try again.',
+  'auth/unauthorized-domain': 'This web address is not allowed to sign in yet. The website admin must add it in Firebase.',
+  'auth/network-request-failed': 'No internet connection, or the connection was blocked. Please try again.',
+  'auth/web-storage-unsupported': 'This browser is blocking storage the sign-in needs. Allow cookies for this site or use another browser.',
+  'auth/internal-error': 'Google sign-in had a problem. Please try again in a minute.'
+};
+const authFail = e => {
+  console.error(e);
+  say($('#pt-out-msg'), `${AUTH_WHY[e.code] || 'Sign-in did not work. Please try again.'} (${e.code || e.message})`, true);
+};
+// finish a sign-in that went through a full-page redirect
+getRedirectResult(auth).catch(authFail);
+
 $('#pt-signin').addEventListener('click', async () => {
-  const msg = $('#pt-out-msg');
-  say(msg, '');
+  say($('#pt-out-msg'), '');
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   try { await signInWithPopup(auth, provider); }
   catch (e) {
-    if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') return signInWithRedirect(auth, provider);
-    if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') say(msg, 'Sign-in did not work. Please try again.', true);
+    // phones without pop-up support: go to Google and come back
+    if (e.code === 'auth/operation-not-supported-in-this-environment') return signInWithRedirect(auth, provider).catch(authFail);
+    authFail(e);
   }
 });
 document.querySelectorAll('.pt-signout').forEach(b => b.addEventListener('click', () => signOut(auth)));
