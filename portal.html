@@ -40,7 +40,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Bebas+Neue&family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,700;1,700&family=Noto+Serif+Sinhala:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.dataset.theme="dark";try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>.loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff}[data-theme="dark"] .loader{background:#04070b}.lg{width:clamp(170px,30vw,230px)}.lg img{display:block;width:100%;height:auto}.lg img.lg-dark{display:none}[data-theme="dark"] .lg img.lg-light{display:none}[data-theme="dark"] .lg img.lg-dark{display:block}.loader.done{opacity:0;visibility:hidden}</style>
-<link rel="stylesheet" href="style.css?v=153">
+<link rel="stylesheet" href="style.css?v=156">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -70,82 +70,151 @@
   </div>
 </header>
 
-<main id="main" tabindex="-1">
-<section class="page-hero pt-hero">
-  <div class="wrap">
-    <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">›</span><span aria-current="page">Member portal</span></nav>
-    <h1>Member <em>portal</em></h1>
-    <p class="lead">Your profile, the projects you served at and your points, in one place.</p>
+<main id="main" tabindex="-1" class="pt-page">
+<div class="wrap">
+  <nav class="breadcrumb pt-crumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span aria-hidden="true">›</span><span aria-current="page">Member portal</span></nav>
+
+  <p id="pt-loading" class="pt-wait" role="status">Opening the portal…</p>
+
+  <section id="pt-out" class="pt-gate" hidden aria-labelledby="pt-out-h">
+    <div class="pt-gate-t">
+      <h1 id="pt-out-h">Member portal</h1>
+      <p>Your service record with the Leo Club of Matara Excellence: the projects you served at, your hours and points, and where you stand this Leo year.</p>
+    </div>
+    <div class="pt-gate-box">
+      <h2>Sign in</h2>
+      <p>Use the Google account you gave the club. New accounts are approved by the Secretary.</p>
+      <button id="pt-signin" class="pt-google" type="button"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Sign in with Google</button>
+      <p id="pt-out-msg" class="form-status" role="status"></p>
+      <p class="pt-fine">We take only your name, photo and email from Google. Read the <a class="inline" href="privacy.html#portal">privacy policy</a>.</p>
+    </div>
+  </section>
+
+  <section id="pt-pending" class="pt-gate" hidden aria-labelledby="pt-pend-h">
+    <div class="pt-gate-t">
+      <h1 id="pt-pend-h">Thank you, <span id="pt-pending-name"></span></h1>
+      <p>Your account is waiting for approval. Once the Secretary or President approves it, sign in again to see your service record.</p>
+    </div>
+    <div class="pt-gate-box"><button class="pt-btn ghost pt-signout" type="button">Sign out</button></div>
+  </section>
+
+  <div id="pt-app" class="pt-app" hidden>
+    <aside class="pt-rail" aria-label="Portal">
+      <div id="pt-me" class="pt-me"></div>
+      <nav class="pt-nav">
+        <button type="button" data-panel="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Overview</button>
+        <button type="button" data-panel="projects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v17l-7-4-7 4z"/></svg>Projects</button>
+        <button type="button" data-panel="board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Leaderboard</button>
+        <button type="button" data-panel="members"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.7-3.3 3.3-5.3 6.5-5.3s5.8 2 6.5 5.3M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.9c1.9.7 3.2 2.6 3.5 5.1"/></svg>Members</button>
+        <button type="button" data-panel="manage" id="pt-nav-manage" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Manage <span id="pt-pend-n" class="pt-badge"></span></button>
+      </nav>
+      <button class="pt-out pt-signout" type="button">Sign out</button>
+    </aside>
+
+    <div class="pt-main">
+      <section class="pt-panel" id="pt-overview" aria-labelledby="pt-hello">
+        <header class="pt-head">
+          <h1 id="pt-hello">Hello</h1>
+          <p id="pt-hello-sub"></p>
+        </header>
+        <div id="pt-figs" class="pt-figs"></div>
+        <div id="pt-track" class="pt-track"></div>
+        <div class="pt-split">
+          <section><h2 class="pt-h">Projects you served at</h2><div id="pt-recent" class="pt-rows"></div></section>
+          <section><h2 class="pt-h">Coming up</h2><div id="pt-next" class="pt-rows"></div></section>
+        </div>
+        <section id="pt-awards-box" hidden><h2 class="pt-h">Your awards</h2><ul id="pt-awards" class="pt-awards"></ul></section>
+        <details class="pt-edit">
+          <summary>Edit your profile</summary>
+          <form id="pt-form" class="pt-fields" novalidate>
+            <label>Name<input name="name" type="text" maxlength="80" autocomplete="name" required></label>
+            <label>School or workplace<input name="school" type="text" maxlength="120" autocomplete="organization"></label>
+            <label class="wide">About you<textarea name="bio" rows="3" maxlength="400" placeholder="A line or two other members will see"></textarea></label>
+            <div class="wide pt-form-end"><button class="pt-btn" type="submit">Save profile</button><p id="pt-form-msg" class="form-status" role="status"></p></div>
+            <p class="wide pt-fine">Other members see your name, photo, school, what you write here and your numbers. Your email stays private.</p>
+          </form>
+        </details>
+      </section>
+
+      <section class="pt-panel" id="pt-projects" aria-labelledby="pt-projects-h" hidden>
+        <header class="pt-head pt-head-row">
+          <h1 id="pt-projects-h">Projects</h1>
+          <div class="pt-tools">
+            <div class="pt-seg" role="group" aria-label="Show"><button type="button" data-pfilter="all" aria-pressed="true">All projects</button><button type="button" data-pfilter="mine" aria-pressed="false">Mine</button></div>
+            <button id="pt-add" class="pt-btn pt-officer" type="button" hidden>Add project</button>
+          </div>
+        </header>
+        <div id="pt-plist"></div>
+      </section>
+
+      <section class="pt-panel" id="pt-board" aria-labelledby="pt-board-h" hidden>
+        <header class="pt-head pt-head-row">
+          <h1 id="pt-board-h">Leaderboard</h1>
+          <div class="pt-seg" role="group" aria-label="Period"><button type="button" data-byear="this" aria-pressed="true" id="pt-byear-this">This Leo year</button><button type="button" data-byear="all" aria-pressed="false">All time</button></div>
+        </header>
+        <p class="pt-lead">Points come from the projects you serve at. Each project carries its own hours and points, set by the Secretary.</p>
+        <ol id="pt-board-list" class="pt-board"></ol>
+      </section>
+
+      <section class="pt-panel" id="pt-members" aria-labelledby="pt-members-h" hidden>
+        <header class="pt-head pt-head-row">
+          <h1 id="pt-members-h">Members</h1>
+          <label class="pt-search"><span class="sr-only">Search members</span><input id="pt-msearch" type="search" placeholder="Search by name or position"></label>
+        </header>
+        <p class="pt-lead" id="pt-count"></p>
+        <div id="pt-grid" class="pt-grid"></div>
+      </section>
+
+      <section class="pt-panel" id="pt-manage" aria-labelledby="pt-manage-h" hidden>
+        <header class="pt-head"><h1 id="pt-manage-h">Manage</h1><p>Approve new accounts, set roles and positions, and list people in advance.</p></header>
+        <h2 class="pt-h">Waiting for approval</h2>
+        <div id="pt-pend" class="pt-list"></div>
+        <h2 class="pt-h">Roles and positions</h2>
+        <p class="pt-lead">Choose a role and type the position, then press Save. At handover, give next year's President the President role.</p>
+        <div id="pt-all" class="pt-list"></div>
+        <h2 class="pt-h">Roster <span id="pt-roster-n" class="pt-badge"></span></h2>
+        <p class="pt-lead">People on the roster are approved with their role and position the first time they sign in with that email. Add one person per line: email, name, role, position. Roles: member, director, exco, secretary, president, admin.</p>
+        <form id="pt-roster-form" class="pt-roster-form" novalidate>
+          <label><span class="sr-only">People to add</span><textarea name="list" rows="5" placeholder="nimal@gmail.com, Nimal Perera, director, Director of PR" spellcheck="false"></textarea></label>
+          <div class="pt-form-end"><button class="pt-btn" type="submit">Add to roster</button><p id="pt-roster-msg" class="form-status" role="status"></p></div>
+        </form>
+        <div id="pt-roster" class="pt-list"></div>
+      </section>
+    </div>
   </div>
-</section>
-<section class="sec pt-sec"><div class="wrap">
-  <div id="pt-loading" class="pt-box"><p class="small">Loading…</p></div>
+</div>
 
-  <div id="pt-out" class="pt-box pt-gate" hidden>
-    <h2>Sign in</h2>
-    <p class="lead">Use the Google account you gave the club. The first time you sign in, the Secretary approves your account.</p>
-    <button id="pt-signin" class="pt-google" type="button"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Sign in with Google</button>
-    <p id="pt-out-msg" class="form-status" role="status"></p>
-    <p class="small">Only your name, photo and email are taken from Google. See the <a class="inline" href="privacy.html#portal">privacy policy</a>.</p>
-  </div>
+<dialog id="pt-mdlg" class="pt-dlg" aria-label="Member">
+  <button class="pt-x" type="button" aria-label="Close">×</button>
+  <div id="pt-mdlg-body"></div>
+</dialog>
 
-  <div id="pt-pending" class="pt-box pt-gate" hidden>
-    <h2>Thank you, <span id="pt-pending-name"></span></h2>
-    <p class="lead">Your account is waiting for approval. Once the Secretary or President approves it, sign in again to see your profile.</p>
-    <button class="btn pt-signout" type="button">Sign out</button>
-  </div>
+<dialog id="pt-pdlg" class="pt-dlg" aria-labelledby="pt-pdlg-h">
+  <button class="pt-x" type="button" aria-label="Close">×</button>
+  <h2 id="pt-pdlg-h">Add project</h2>
+  <form id="pt-pform" class="pt-fields" novalidate>
+    <label class="wide">Project name<input name="title" type="text" maxlength="120" required></label>
+    <label>Date<input name="date" type="date" required></label>
+    <label>Cause<input name="cause" type="text" maxlength="60" list="pt-causes" placeholder="For example Environment"></label>
+    <label class="wide">Venue<input name="venue" type="text" maxlength="120"></label>
+    <label>Hours each Leo gets<input name="hours" type="number" min="0" max="48" step="0.5"></label>
+    <label>Points each Leo gets<input name="points" type="number" min="0" max="500" step="1"></label>
+    <label class="wide">Notes<textarea name="notes" rows="3" maxlength="600"></textarea></label>
+    <div class="wide pt-form-end"><button class="pt-btn" type="submit">Save project</button><button id="pt-pdel" class="pt-btn danger" type="button" hidden>Delete project</button><p id="pt-pform-msg" class="form-status" role="status"></p></div>
+  </form>
+  <datalist id="pt-causes"><option value="Environment"><option value="Health"><option value="Education"><option value="Hunger"><option value="Vision"><option value="Diabetes"><option value="Childhood cancer"><option value="Community"><option value="Fellowship"><option value="Fundraising"></datalist>
+</dialog>
 
-  <div id="pt-app" hidden>
-    <div class="pt-top">
-      <p class="small">Signed in as <b id="pt-who"></b></p>
-      <button class="btn ghost pt-signout" type="button">Sign out</button>
-    </div>
-    <div class="pt-tabs" role="tablist" aria-label="Portal">
-      <button class="pt-tab" role="tab" data-tab="profile" aria-controls="pt-profile" type="button">My profile</button>
-      <button class="pt-tab" role="tab" data-tab="members" aria-controls="pt-members" type="button">Members</button>
-      <button class="pt-tab" role="tab" data-tab="manage" aria-controls="pt-manage" type="button" id="pt-manage-tab" hidden>Manage <span id="pt-pend-n"></span></button>
-    </div>
+<dialog id="pt-adlg" class="pt-dlg" aria-labelledby="pt-adlg-h">
+  <button class="pt-x" type="button" aria-label="Close">×</button>
+  <h2 id="pt-adlg-h">Attendance</h2>
+  <p id="pt-adlg-sub" class="pt-lead"></p>
+  <label class="pt-search"><span class="sr-only">Find a member</span><input id="pt-asearch" type="search" placeholder="Find a member"></label>
+  <div id="pt-alist" class="pt-picks"></div>
+  <div class="pt-form-end"><button id="pt-asave" class="pt-btn" type="button">Save attendance</button><span id="pt-acount" class="pt-fine"></span><p id="pt-adlg-msg" class="form-status" role="status"></p></div>
+</dialog>
 
-    <div class="pt-panel" id="pt-profile" role="tabpanel">
-      <article id="pt-card" class="pt-card"></article>
-      <form id="pt-form" class="form pt-form" novalidate>
-        <h3>Edit your profile</h3>
-        <label>Name<input name="name" type="text" maxlength="80" autocomplete="name" required></label>
-        <label>School or workplace<input name="school" type="text" maxlength="120" autocomplete="organization"></label>
-        <label>About you<textarea name="bio" rows="4" maxlength="400" placeholder="A line or two other members will see"></textarea></label>
-        <button class="btn" type="submit">Save</button>
-        <p id="pt-form-msg" class="form-status" role="status"></p>
-        <p class="small">Other members see your name, photo, school, the text above and your stats. Your email stays private.</p>
-      </form>
-    </div>
-
-    <div class="pt-panel" id="pt-members" role="tabpanel" hidden>
-      <p class="small" id="pt-count"></p>
-      <div id="pt-grid" class="pt-grid"></div>
-    </div>
-
-    <div class="pt-panel" id="pt-manage" role="tabpanel" hidden>
-      <h3 class="pt-h">Waiting for approval</h3>
-      <div id="pt-pend" class="pt-list"></div>
-      <h3 class="pt-h">Members, roles and positions</h3>
-      <p class="small">Set each person's role and position, then press Save. Choose "President" for the next year's President at handover. The Secretary, President and portal admins can manage the portal.</p>
-      <div id="pt-all" class="pt-list"></div>
-      <h3 class="pt-h">Roster <span id="pt-roster-n"></span></h3>
-      <p class="small">Add people in advance with the email they will sign in with. When they sign in, they are approved with this role and position straight away. One person per line: <b>email, name, role, position</b>. Role is one of: member, director, exco, secretary, president, admin.</p>
-      <form id="pt-roster-form" class="form pt-roster-form" novalidate>
-        <label>People to add<textarea name="list" rows="5" placeholder="nimal@gmail.com, Nimal Perera, director, Director of PR" spellcheck="false"></textarea></label>
-        <button class="btn" type="submit">Add to roster</button>
-        <p id="pt-roster-msg" class="form-status" role="status"></p>
-      </form>
-      <div id="pt-roster" class="pt-list"></div>
-    </div>
-  </div>
-
-  <dialog id="pt-dialog" class="pt-dialog" aria-label="Member profile">
-    <button id="pt-dialog-close" class="pt-x" type="button" aria-label="Close">×</button>
-    <div id="pt-dialog-body" class="pt-card"></div>
-  </dialog>
-</div></section>
+<p id="pt-toast" class="pt-toast" role="status" aria-live="polite"></p>
 </main>
 
 <footer>
@@ -164,6 +233,6 @@
 <script src="team-data.js?v=15"></script>
 <script src="team.js?v=3"></script>
 <script src="script.js?v=42"></script>
-<script type="module" src="portal.js?v=4"></script>
+<script type="module" src="portal.js?v=5"></script>
 </body>
 </html>

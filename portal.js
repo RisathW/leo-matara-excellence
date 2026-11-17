@@ -1,10 +1,10 @@
-// Member portal: Google sign-in, profiles, member list and officer tools.
-// Data lives in Firebase (Firestore). What each person may read or change is enforced
-// by the security rules in Firebase, not by this file.
+// Member portal: Google sign-in, service record, projects and attendance, leaderboard,
+// members and officer tools. Data lives in Firebase (Firestore); what each person may
+// read or change is enforced by the security rules in Firebase, not by this file.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, collection, query, where, getDocs, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // The web config identifies the project. It is not a secret; access is controlled by the rules.
@@ -23,6 +23,7 @@ const db = getFirestore(app);
 const CLUB_EMAIL = 'leoclubofmataraexcellence@gmail.com';
 const ROLES = { member: 'Member', director: 'Director', exco: 'Executive Committee', secretary: 'Secretary', president: 'President', admin: 'Portal admin' };
 const OFFICER_ROLES = ['secretary', 'president', 'admin'];
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const $ = s => document.querySelector(s);
 // build elements with text only, so nothing a member types is ever read as HTML
@@ -31,38 +32,48 @@ const el = (tag, props = {}, ...kids) => {
   for (const [k, v] of Object.entries(props)) {
     if (k === 'class') n.className = v;
     else if (k === 'text') n.textContent = v;
+    else if (k === 'style') n.style.cssText = v;
     else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
     else if (v !== false && v != null) n.setAttribute(k, v === true ? '' : v);
   }
-  kids.flat().forEach(c => c != null && n.append(c));
+  kids.flat().forEach(c => c != null && c !== false && n.append(c));
   return n;
 };
 const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-const avatar = (m, cls = 'pt-av') => m.photo
-  ? el('img', { class: cls, src: m.photo, alt: '', referrerpolicy: 'no-referrer', loading: 'lazy' })
-  : el('span', { class: cls + ' pt-av-i', 'aria-hidden': 'true', text: initials(m.name) });
+const avatar = (m, cls = '') => m.photo
+  ? el('img', { class: 'pt-av ' + cls, src: m.photo, alt: '', referrerpolicy: 'no-referrer', loading: 'lazy' })
+  : el('span', { class: 'pt-av pt-av-i ' + cls, 'aria-hidden': 'true', text: initials(m.name) });
 const say = (node, msg, bad = false) => { node.textContent = msg; node.classList.toggle('bad', bad); };
+const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
+const roleLine = m => m.position || (m.role && m.role !== 'member' ? ROLES[m.role] : 'Member');
+
+// ---------- Leo year: 1 July to 30 June ----------
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const leoYear = iso => { const [y, m] = iso.split('-').map(Number); return m >= 7 ? y : y - 1; };
+const lyLabel = y => `${y}/${String((y + 1) % 100).padStart(2, '0')}`;
+const THIS_LY = leoYear(todayISO());
+const niceDate = iso => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
 
 const views = ['pt-loading', 'pt-out', 'pt-pending', 'pt-app'];
 const show = id => views.forEach(v => { $('#' + v).hidden = v !== id; });
 
 let me = null, user = null, officer = false;
+let members = [], projects = [];
 
-// plain-language reasons for sign-in problems; the code is shown too so it can be looked up
+// ---------- sign-in ----------
 const AUTH_WHY = {
   'auth/popup-blocked': 'The browser blocked the Google window. Allow pop-ups for this site and try again.',
   'auth/popup-closed-by-user': 'The Google window closed before sign-in finished. If you did not close it, your browser may be blocking third-party cookies for this site; allow them, or try another browser.',
-  'auth/cancelled-popup-request': 'Another sign-in window was already open. Please try again.',
+  'auth/cancelled-popup-request': 'Another sign-in window was already open. Try again.',
   'auth/unauthorized-domain': 'This web address is not allowed to sign in yet. The website admin must add it in Firebase.',
-  'auth/network-request-failed': 'No internet connection, or the connection was blocked. Please try again.',
+  'auth/network-request-failed': 'No internet connection, or the connection was blocked. Try again.',
   'auth/web-storage-unsupported': 'This browser is blocking storage the sign-in needs. Allow cookies for this site or use another browser.',
-  'auth/internal-error': 'Google sign-in had a problem. Please try again in a minute.'
+  'auth/internal-error': 'Google sign-in had a problem. Try again in a minute.'
 };
 const authFail = e => {
   console.error(e);
-  say($('#pt-out-msg'), `${AUTH_WHY[e.code] || 'Sign-in did not work. Please try again.'} (${e.code || e.message})`, true);
+  say($('#pt-out-msg'), `${AUTH_WHY[e.code] || 'Sign-in did not work. Try again.'} (${e.code || e.message})`, true);
 };
-// finish a sign-in that went through a full-page redirect
 getRedirectResult(auth).catch(authFail);
 
 $('#pt-signin').addEventListener('click', async () => {
@@ -71,7 +82,6 @@ $('#pt-signin').addEventListener('click', async () => {
   provider.setCustomParameters({ prompt: 'select_account' });
   try { await signInWithPopup(auth, provider); }
   catch (e) {
-    // phones without pop-up support: go to Google and come back
     if (e.code === 'auth/operation-not-supported-in-this-environment') return signInWithRedirect(auth, provider).catch(authFail);
     authFail(e);
   }
@@ -105,162 +115,346 @@ onAuthStateChanged(auth, async u => {
     me = { id: u.uid, ...snap.data() };
     officer = (u.email === CLUB_EMAIL && u.emailVerified) || (me.status === 'approved' && OFFICER_ROLES.includes(me.role));
     if (me.status !== 'approved' && !officer) {
-      $('#pt-pending-name').textContent = me.name || 'there';
+      $('#pt-pending-name').textContent = (me.name || 'there').split(' ')[0];
       show('pt-pending');
       return;
     }
+    await loadData();
     renderApp();
   } catch (e) {
     console.error(e);
     show('pt-out');
     const why = e.code === 'permission-denied' ? ' (the database rules blocked it)'
       : e.code === 'unavailable' ? ' (no connection to the database)' : e.code ? ` (${e.code})` : '';
-    say($('#pt-out-msg'), `The portal could not load your account${why}. Please try again later.`, true);
+    say($('#pt-out-msg'), `The portal could not load your account${why}. Try again later.`, true);
   }
 });
 
-// ---------- signed-in app ----------
-const tabs = () => [...document.querySelectorAll('.pt-tab')];
-tabs().forEach(t => t.addEventListener('click', () => openTab(t.dataset.tab)));
-function openTab(name) {
-  tabs().forEach(t => { const on = t.dataset.tab === name; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
-  document.querySelectorAll('.pt-panel').forEach(p => { p.hidden = p.id !== 'pt-' + name; });
-  if (name === 'members') loadMembers();
-  if (name === 'manage') { loadManage(); loadRoster(); }
+async function loadData() {
+  const [m, p] = await Promise.all([
+    getDocs(query(collection(db, 'members'), where('status', '==', 'approved'))),
+    getDocs(collection(db, 'projects'))
+  ]);
+  members = m.docs.map(d => ({ id: d.id, ...d.data() }));
+  projects = p.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date || ''))
+    .sort((a, b) => b.date.localeCompare(a.date));
 }
-// arrow keys move between tabs
-$('.pt-tabs').addEventListener('keydown', e => {
-  if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
-  const vis = tabs().filter(t => !t.hidden), i = vis.indexOf(document.activeElement);
-  if (i < 0) return;
-  const n = vis[(i + (e.key === 'ArrowRight' ? 1 : vis.length - 1)) % vis.length];
-  n.focus(); openTab(n.dataset.tab);
-});
+
+// ---------- numbers, worked out from project attendance ----------
+function statsFor(uid, year = null) {
+  const s = { projects: 0, hours: 0, points: 0 };
+  for (const p of projects) {
+    if (p.date > todayISO() || (year != null && leoYear(p.date) !== year) || !(p.attendees || []).includes(uid)) continue;
+    s.projects++; s.hours += Number(p.hours) || 0; s.points += Number(p.points) || 0;
+  }
+  return s;
+}
+function ranking(year) {
+  return members.map(m => ({ m, s: statsFor(m.id, year) }))
+    .sort((a, b) => b.s.points - a.s.points || b.s.hours - a.s.hours || (a.m.name || '').localeCompare(b.m.name || ''));
+}
+
+// ---------- app shell ----------
+const navs = () => [...document.querySelectorAll('.pt-nav button')];
+navs().forEach(b => b.addEventListener('click', () => openPanel(b.dataset.panel)));
+function openPanel(name) {
+  navs().forEach(b => b.toggleAttribute('aria-current', b.dataset.panel === name));
+  document.querySelectorAll('.pt-panel').forEach(p => { p.hidden = p.id !== 'pt-' + name; });
+  ({ overview: renderOverview, projects: renderProjects, board: renderBoard, members: renderMembers, manage: loadManage })[name]();
+  const main = $('.pt-main');
+  if (main.getBoundingClientRect().top < 0) main.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 function renderApp() {
   show('pt-app');
-  $('#pt-who').textContent = me.name || user.email;
-  $('#pt-manage-tab').hidden = !officer;
-  renderProfile($('#pt-card'), me, true);
+  $('#pt-me').replaceChildren(avatar(me), el('span', {}, el('b', { text: me.name || user.email }), el('small', { text: roleLine(me) })));
+  $('#pt-nav-manage').hidden = !officer;
+  document.querySelectorAll('.pt-officer').forEach(n => { n.hidden = !officer; });
   const f = $('#pt-form');
   f.name.value = me.name || ''; f.school.value = me.school || ''; f.bio.value = me.bio || '';
-  openTab('profile');
+  openPanel('overview');
 }
 
-function renderProfile(box, m, mine = false) {
-  const s = m.stats || {};
-  const awards = m.awards || [];
-  box.replaceChildren(
-    el('div', { class: 'pt-banner' },
-      el('img', { class: 'pt-banner-logo', src: 'assets/logo-sm-dark.png', alt: '' }),
-      el('div', { class: 'pt-stats' },
-        stat(s.projects || 0, 'Projects'), stat(s.hours || 0, 'Hours'), stat(s.points || 0, 'Points'), stat(awards.length, 'Awards'))),
-    el('div', { class: 'pt-id' },
-      avatar(m, 'pt-av pt-av-lg'),
-      el('div', {},
-        el('h2', { class: 'pt-name', text: m.name || 'New member' }),
-        el('p', { class: 'pt-club', text: 'Leo Club of Matara Excellence' }),
-        el('p', { class: 'pt-pos', text: [m.position, ROLES[m.role] && m.role !== 'member' ? ROLES[m.role] : (m.position ? '' : 'Member')].filter(Boolean).join(' · ') }),
-        m.status !== 'approved' ? el('p', { class: 'pt-flag', text: 'Waiting for approval' }) : null)),
-    m.school || m.bio ? el('div', { class: 'pt-about' },
-      m.school ? el('p', {}, el('b', { text: 'School or workplace: ' }), m.school) : null,
-      m.bio ? el('p', { text: m.bio }) : null) : null,
-    awards.length ? el('ul', { class: 'pt-awards' }, awards.map(a => el('li', { text: a }))) : null
-  );
-  if (mine && !(s.projects || s.hours || s.points)) box.append(el('p', { class: 'small pt-note', text: 'Your projects, hours and points appear here once the Secretary records project attendance.' }));
+// ---------- overview ----------
+function renderOverview() {
+  const s = statsFor(me.id, THIS_LY), all = statsFor(me.id);
+  const pos = ranking(THIS_LY).findIndex(r => r.m.id === me.id);
+  $('#pt-hello').textContent = `Hello, ${(me.name || 'Leo').split(' ')[0]}`;
+  $('#pt-hello-sub').textContent = `${roleLine(me)}, Leo Club of Matara Excellence. Leo year ${lyLabel(THIS_LY)}.`;
+  $('#pt-figs').replaceChildren(
+    fig(s.projects, 'projects served', `${all.projects} in total`),
+    fig(s.hours, 'service hours', `${all.hours} in total`),
+    fig(s.points, 'points', `${all.points} in total`),
+    fig(pos >= 0 && s.points > 0 ? pos + 1 : '–', 'club rank', `of ${members.length} Leos`));
+  renderTrack($('#pt-track'), me.id);
+  const mine = projects.filter(p => (p.attendees || []).includes(me.id) && p.date <= todayISO()).slice(0, 5);
+  const next = projects.filter(p => p.date > todayISO()).reverse().slice(0, 3);
+  $('#pt-recent').replaceChildren(...(mine.length ? mine.map(p => projRow(p, false)) : [empty('No projects recorded for you yet. The Secretary marks attendance after each project.')]));
+  $('#pt-next').replaceChildren(...(next.length ? next.map(p => projRow(p, false)) : [empty('No upcoming projects added yet.')]));
+  const aw = me.awards || [];
+  $('#pt-awards-box').hidden = !aw.length;
+  $('#pt-awards').replaceChildren(...aw.map(a => el('li', { text: a })));
 }
-const stat = (n, label) => el('div', { class: 'pt-stat' }, el('b', { text: String(n) }), el('span', { text: label }));
+const fig = (n, label, sub) => el('div', { class: 'pt-fig' }, el('b', { text: String(n) }), el('span', { text: label }), el('small', { text: sub }));
+const empty = t => el('p', { class: 'pt-empty', text: t });
+
+// the service year: one mark per club project from July to June; filled where this Leo served
+function renderTrack(box, uid) {
+  const start = Date.UTC(THIS_LY, 6, 1), end = Date.UTC(THIS_LY + 1, 6, 1);
+  const at = iso => { const [y, m, d] = iso.split('-').map(Number); return (Date.UTC(y, m - 1, d) - start) / (end - start) * 100; };
+  const yearP = projects.filter(p => leoYear(p.date) === THIS_LY);
+  const today = todayISO();
+  const served = yearP.filter(p => (p.attendees || []).includes(uid) && p.date <= today).length;
+  const done = yearP.filter(p => p.date <= today).length;
+  const line = el('div', { class: 'pt-track-line' },
+    el('span', { class: 'pt-track-done', style: `width:${Math.min(100, at(today))}%` }),
+    el('span', { class: 'pt-track-now', style: `left:${Math.min(100, at(today))}%`, title: 'Today' }),
+    yearP.map(p => {
+      const mine = (p.attendees || []).includes(uid), future = p.date > today;
+      return el('span', { class: 'pt-mark' + (future ? ' is-next' : mine ? ' is-mine' : ''), style: `left:${at(p.date)}%`, title: `${p.title}, ${niceDate(p.date)}${future ? ' (upcoming)' : mine ? ' (served)' : ''}` });
+    }));
+  const months = el('div', { class: 'pt-track-m', 'aria-hidden': 'true' }, [6, 7, 8, 9, 10, 11, 0, 1, 2, 3, 4, 5].map(i => el('span', { text: MONTHS[i].slice(0, 3) })));
+  box.replaceChildren(
+    el('p', { class: 'pt-track-t' }, el('b', { text: `Your service year ${lyLabel(THIS_LY)}` }),
+      el('span', { text: done ? `You served at ${served} of the ${plural(done, 'project')} the club has held so far.` : 'The club’s projects for this Leo year will appear here.' })),
+    el('div', { class: 'pt-track-w', 'aria-hidden': 'true' }, line, months),
+    el('p', { class: 'pt-key', 'aria-hidden': 'true' },
+      el('span', { class: 'k-mine', text: 'Served' }), el('span', { class: 'k-club', text: 'Club project' }), el('span', { class: 'k-next', text: 'Upcoming' })));
+}
 
 $('#pt-form').addEventListener('submit', async e => {
   e.preventDefault();
   const f = e.target, msg = $('#pt-form-msg');
   const data = { name: f.name.value.trim().slice(0, 80), school: f.school.value.trim().slice(0, 120), bio: f.bio.value.trim().slice(0, 400) };
-  if (!data.name) { say(msg, 'Please type your name.', true); f.name.focus(); return; }
+  if (!data.name) { say(msg, 'Type your name.', true); f.name.focus(); return; }
   try {
     await updateDoc(doc(db, 'members', me.id), data);
     Object.assign(me, data);
-    renderProfile($('#pt-card'), me, true);
-    $('#pt-who').textContent = me.name;
-    say(msg, 'Saved.');
-  } catch (err) { console.error(err); say(msg, 'Could not save. Please try again.', true); }
+    const mm = members.find(m => m.id === me.id); if (mm) Object.assign(mm, data);
+    renderApp();
+    say($('#pt-form-msg'), 'Profile saved.');
+  } catch (err) { console.error(err); say(msg, 'Your profile was not saved. Check your connection and try again.', true); }
 });
 
-// ---------- members ----------
-async function loadMembers() {
-  const grid = $('#pt-grid');
-  grid.replaceChildren(el('p', { class: 'small', text: 'Loading members…' }));
+// ---------- projects ----------
+let projFilter = 'all';
+document.querySelectorAll('[data-pfilter]').forEach(b => b.addEventListener('click', () => {
+  projFilter = b.dataset.pfilter;
+  document.querySelectorAll('[data-pfilter]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  renderProjects();
+}));
+function renderProjects() {
+  const list = projects.filter(p => projFilter === 'all' || (p.attendees || []).includes(me.id));
+  const box = $('#pt-plist');
+  if (!list.length) {
+    box.replaceChildren(empty(projFilter === 'mine' ? 'You have no recorded projects yet.' : officer ? 'No projects yet. Add the first one with "Add project".' : 'No projects have been added yet.'));
+    return;
+  }
+  const groups = [];
+  for (const p of list) {
+    const key = p.date.slice(0, 7);
+    if (!groups.length || groups[groups.length - 1].key !== key) groups.push({ key, items: [] });
+    groups[groups.length - 1].items.push(p);
+  }
+  box.replaceChildren(...groups.map(g => {
+    const [y, m] = g.key.split('-').map(Number);
+    return el('section', { class: 'pt-month' }, el('h3', { text: `${MONTHS[m - 1]} ${y}` }), el('div', { class: 'pt-rows' }, g.items.map(p => projRow(p, true))));
+  }));
+}
+function projRow(p, full) {
+  const [y, m, d] = p.date.split('-').map(Number);
+  const wd = new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short' });
+  const att = (p.attendees || []).length, mine = (p.attendees || []).includes(me.id), future = p.date > todayISO();
+  const facts = [p.cause, p.venue].filter(Boolean).join(', ');
+  return el('article', { class: 'pt-proj' + (mine ? ' is-mine' : '') },
+    el('div', { class: 'pt-date', 'aria-hidden': 'true' }, el('b', { text: String(d) }), el('span', { text: full ? wd : MONTHS[m - 1].slice(0, 3) })),
+    el('div', { class: 'pt-proj-t' },
+      el('h4', { text: p.title || 'Untitled project' }),
+      el('p', { text: `${niceDate(p.date)}${facts ? ', ' + facts : ''}` }),
+      full && p.notes ? el('p', { class: 'pt-notes', text: p.notes }) : null),
+    el('div', { class: 'pt-proj-n' },
+      el('span', { text: `${Number(p.hours) || 0} h, ${Number(p.points) || 0} pts` }),
+      el('small', { text: future ? 'Upcoming' : mine ? 'You served' : plural(att, 'Leo') + ' served' })),
+    full && officer ? el('div', { class: 'pt-proj-a' },
+      el('button', { class: 'pt-btn', type: 'button', text: 'Attendance', onclick: () => openAttendance(p) }),
+      el('button', { class: 'pt-btn ghost', type: 'button', text: 'Edit', onclick: () => openProjectForm(p) })) : null);
+}
+
+// add / edit a project (officers)
+const pdlg = $('#pt-pdlg'), pform = $('#pt-pform');
+let editing = null;
+$('#pt-add').addEventListener('click', () => openProjectForm(null));
+function openProjectForm(p) {
+  editing = p;
+  $('#pt-pdlg-h').textContent = p ? 'Edit project' : 'Add project';
+  pform.title.value = p ? p.title || '' : '';
+  pform.date.value = p ? p.date : todayISO();
+  pform.cause.value = p ? p.cause || '' : '';
+  pform.venue.value = p ? p.venue || '' : '';
+  pform.hours.value = p ? p.hours ?? 3 : 3;
+  pform.points.value = p ? p.points ?? 10 : 10;
+  pform.notes.value = p ? p.notes || '' : '';
+  $('#pt-pdel').hidden = !p;
+  say($('#pt-pform-msg'), '');
+  pdlg.showModal();
+  pform.title.focus();
+}
+pform.addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('#pt-pform-msg');
+  const data = {
+    title: pform.title.value.trim().slice(0, 120), date: pform.date.value, cause: pform.cause.value.trim().slice(0, 60),
+    venue: pform.venue.value.trim().slice(0, 120), notes: pform.notes.value.trim().slice(0, 600),
+    hours: Math.max(0, Math.min(48, Number(pform.hours.value) || 0)), points: Math.max(0, Math.min(500, Math.round(Number(pform.points.value) || 0))),
+    updatedAt: serverTimestamp()
+  };
+  if (!data.title) { say(msg, 'Type the project name.', true); pform.title.focus(); return; }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date)) { say(msg, 'Choose the date.', true); pform.date.focus(); return; }
   try {
-    const snap = await getDocs(query(collection(db, 'members'), where('status', '==', 'approved')));
-    const list = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => rank(b) - rank(a) || (a.name || '').localeCompare(b.name || ''));
-    $('#pt-count').textContent = `${list.length} ${list.length === 1 ? 'member' : 'members'} in the portal`;
-    grid.replaceChildren(...list.map(m => el('button', { class: 'pt-mcard', type: 'button', onclick: () => openMember(m) },
-      avatar(m),
-      el('b', { text: m.name || 'Member' }),
-      el('span', { text: m.position || ROLES[m.role] || 'Member' }),
-      el('small', { text: `${(m.stats || {}).projects || 0} projects · ${(m.stats || {}).points || 0} points` }))));
-    if (!list.length) grid.replaceChildren(el('p', { class: 'small', text: 'No approved members yet.' }));
-  } catch (e) { console.error(e); grid.replaceChildren(el('p', { class: 'small bad', text: 'Could not load the members.' })); }
+    if (editing) await updateDoc(doc(db, 'projects', editing.id), data);
+    else await addDoc(collection(db, 'projects'), { ...data, attendees: [], createdAt: serverTimestamp(), createdBy: me.id });
+    pdlg.close();
+    await loadData(); renderProjects();
+    toast(editing ? 'Project saved.' : 'Project added. Mark attendance once it has taken place.');
+  } catch (err) { console.error(err); say(msg, 'The project was not saved. Only the Secretary, President and portal admins can add projects.', true); }
+});
+$('#pt-pdel').addEventListener('click', async () => {
+  if (!editing || !confirm(`Delete "${editing.title}"? Everyone's hours and points from it will be removed.`)) return;
+  try { await deleteDoc(doc(db, 'projects', editing.id)); pdlg.close(); await loadData(); renderProjects(); toast('Project deleted.'); }
+  catch (err) { console.error(err); say($('#pt-pform-msg'), 'The project was not deleted. Try again.', true); }
+});
+
+// attendance (officers)
+const adlg = $('#pt-adlg');
+let attP = null, picked = new Set();
+function openAttendance(p) {
+  attP = p; picked = new Set(p.attendees || []);
+  $('#pt-adlg-h').textContent = p.title;
+  $('#pt-adlg-sub').textContent = `${niceDate(p.date)}. Tick everyone who served. Each gets ${Number(p.hours) || 0} hours and ${Number(p.points) || 0} points.`;
+  $('#pt-asearch').value = '';
+  drawAttendance();
+  say($('#pt-adlg-msg'), '');
+  adlg.showModal();
+}
+function drawAttendance() {
+  const q = $('#pt-asearch').value.trim().toLowerCase();
+  const list = [...members].sort((a, b) => (a.name || '').localeCompare(b.name || '')).filter(m => !q || (m.name || '').toLowerCase().includes(q));
+  $('#pt-alist').replaceChildren(...list.map(m => el('label', { class: 'pt-pick' },
+    el('input', { type: 'checkbox', checked: picked.has(m.id), onchange: e => { e.target.checked ? picked.add(m.id) : picked.delete(m.id); countAtt(); } }),
+    avatar(m), el('span', {}, el('b', { text: m.name || 'Member' }), el('small', { text: roleLine(m) })))));
+  countAtt();
+}
+const countAtt = () => { $('#pt-acount').textContent = `${plural(picked.size, 'Leo')} ticked`; };
+$('#pt-asearch').addEventListener('input', drawAttendance);
+$('#pt-asave').addEventListener('click', async e => {
+  const b = e.currentTarget; b.disabled = true;
+  try {
+    await updateDoc(doc(db, 'projects', attP.id), { attendees: [...picked], updatedAt: serverTimestamp() });
+    adlg.close(); await loadData(); renderProjects(); toast(`Attendance saved for ${plural(picked.size, 'Leo')}.`);
+  } catch (err) { console.error(err); say($('#pt-adlg-msg'), 'Attendance was not saved. Try again.', true); }
+  b.disabled = false;
+});
+document.querySelectorAll('dialog').forEach(d => {
+  d.addEventListener('click', e => { if (e.target === d) d.close(); });
+  d.querySelectorAll('.pt-x, [data-close]').forEach(b => b.addEventListener('click', () => d.close()));
+});
+
+// ---------- leaderboard ----------
+let boardYear = THIS_LY;
+document.querySelectorAll('[data-byear]').forEach(b => b.addEventListener('click', () => {
+  boardYear = b.dataset.byear === 'all' ? null : THIS_LY;
+  document.querySelectorAll('[data-byear]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  renderBoard();
+}));
+function renderBoard() {
+  $('#pt-byear-this').textContent = `Leo year ${lyLabel(THIS_LY)}`;
+  const rows = ranking(boardYear).filter(r => r.s.points > 0 || r.s.projects > 0);
+  const max = rows.length ? rows[0].s.points || 1 : 1;
+  $('#pt-board-list').replaceChildren(...(rows.length ? rows.map((r, i) => el('li', { class: 'pt-rank' + (r.m.id === me.id ? ' is-me' : '') },
+    el('span', { class: 'pt-rank-n', text: String(i + 1) }),
+    avatar(r.m),
+    el('span', { class: 'pt-rank-t' }, el('b', { text: r.m.name || 'Member' }), el('small', { text: `${roleLine(r.m)}, ${plural(r.s.projects, 'project')}, ${r.s.hours} h` })),
+    el('span', { class: 'pt-rank-bar', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.max(4, r.s.points / max * 100)}%` })),
+    el('span', { class: 'pt-rank-p', text: `${r.s.points} pts` }))) : [empty('Points appear here once attendance is recorded for a project.')]));
+}
+
+// ---------- members ----------
+$('#pt-msearch').addEventListener('input', renderMembers);
+function renderMembers() {
+  const q = $('#pt-msearch').value.trim().toLowerCase();
+  const list = [...members].sort((a, b) => rank(b) - rank(a) || (a.name || '').localeCompare(b.name || ''))
+    .filter(m => !q || `${m.name} ${m.position}`.toLowerCase().includes(q));
+  $('#pt-count').textContent = `${plural(members.length, 'Leo')} in the portal`;
+  $('#pt-grid').replaceChildren(...(list.length ? list.map(m => {
+    const s = statsFor(m.id, THIS_LY);
+    return el('button', { class: 'pt-mcard', type: 'button', onclick: () => openMember(m) },
+      avatar(m, 'pt-av-md'), el('b', { text: m.name || 'Member' }), el('span', { text: roleLine(m) }),
+      el('small', { text: `${s.points} pts this year` }));
+  }) : [empty('No one matches that name.')]));
 }
 const rank = m => ({ president: 5, secretary: 4, exco: 3, director: 2, admin: 1 })[m.role] || 0;
 
-const dlg = $('#pt-dialog');
+const mdlg = $('#pt-mdlg');
 function openMember(m) {
-  renderProfile($('#pt-dialog-body'), m);
-  dlg.showModal();
+  const s = statsFor(m.id, THIS_LY), all = statsFor(m.id);
+  const done = projects.filter(p => (p.attendees || []).includes(m.id) && p.date <= todayISO()).slice(0, 6);
+  $('#pt-mdlg-body').replaceChildren(
+    el('div', { class: 'pt-mhead' }, avatar(m, 'pt-av-lg'),
+      el('div', {}, el('h3', { text: m.name || 'Member' }), el('p', { text: roleLine(m) }), m.school ? el('p', { class: 'pt-muted', text: m.school }) : null)),
+    m.bio ? el('p', { class: 'pt-bio', text: m.bio }) : null,
+    el('div', { class: 'pt-figs pt-figs-sm' }, fig(s.projects, 'projects', `${all.projects} in total`), fig(s.hours, 'hours', `${all.hours} in total`), fig(s.points, 'points', `${all.points} in total`)),
+    (m.awards || []).length ? el('ul', { class: 'pt-awards' }, m.awards.map(a => el('li', { text: a }))) : null,
+    done.length ? el('div', { class: 'pt-rows' }, done.map(p => projRow(p, false))) : null);
+  mdlg.showModal();
 }
-$('#pt-dialog-close').addEventListener('click', () => dlg.close());
-dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
 
 // ---------- officer tools ----------
 async function loadManage() {
   const pend = $('#pt-pend'), all = $('#pt-all');
-  pend.replaceChildren(el('p', { class: 'small', text: 'Loading…' }));
+  pend.replaceChildren(empty('Loading…'));
   all.replaceChildren();
+  loadRoster();
   try {
-    const [p, a] = await Promise.all([
-      getDocs(query(collection(db, 'members'), where('status', '==', 'pending'))),
-      getDocs(query(collection(db, 'members'), where('status', '==', 'approved')))
-    ]);
+    const p = await getDocs(query(collection(db, 'members'), where('status', '==', 'pending')));
     const pending = p.docs.map(d => ({ id: d.id, ...d.data() }));
     const contacts = Object.fromEntries(await Promise.all(pending.map(async m => {
       const c = await getDoc(doc(db, 'contacts', m.id)).catch(() => null);
       return [m.id, c && c.exists() ? c.data().email : ''];
     })));
-    $('#pt-pend-n').textContent = pending.length ? `(${pending.length})` : '';
+    $('#pt-pend-n').textContent = pending.length ? String(pending.length) : '';
     pend.replaceChildren(...(pending.length ? pending.map(m => el('div', { class: 'pt-row' },
       avatar(m),
       el('div', { class: 'pt-row-t' }, el('b', { text: m.name || 'No name' }), el('small', { text: contacts[m.id] || '' })),
       el('div', { class: 'pt-row-a' },
-        el('button', { class: 'btn', type: 'button', text: 'Approve', onclick: e => act(e, () => updateDoc(doc(db, 'members', m.id), { status: 'approved', joined: serverTimestamp() })) }),
-        el('button', { class: 'btn ghost', type: 'button', text: 'Decline', onclick: e => act(e, () => removeMember(m.id), `Decline ${m.name || 'this request'}?`) }))
-    )) : [el('p', { class: 'small', text: 'No requests waiting.' })]));
+        el('button', { class: 'pt-btn', type: 'button', text: 'Approve', onclick: e => act(e, () => updateDoc(doc(db, 'members', m.id), { status: 'approved', joined: serverTimestamp() })) }),
+        el('button', { class: 'pt-btn ghost', type: 'button', text: 'Decline', onclick: e => act(e, () => removeMember(m.id), `Decline ${m.name || 'this request'}?`) }))
+    )) : [empty('No one is waiting for approval.')]));
 
-    const members = a.docs.map(d => ({ id: d.id, ...d.data() })).sort((x, y) => rank(y) - rank(x) || (x.name || '').localeCompare(y.name || ''));
-    all.replaceChildren(...members.map(m => {
+    all.replaceChildren(...[...members].sort((x, y) => rank(y) - rank(x) || (x.name || '').localeCompare(y.name || '')).map(m => {
       const role = el('select', { 'aria-label': `Role of ${m.name}` }, Object.entries(ROLES).map(([k, v]) => el('option', { value: k, text: v, selected: k === m.role })));
-      const pos = el('input', { type: 'text', value: m.position || '', maxlength: '80', placeholder: 'Position, e.g. Treasurer', 'aria-label': `Position of ${m.name}` });
+      const pos = el('input', { type: 'text', value: m.position || '', maxlength: '80', placeholder: 'Position, for example Treasurer', 'aria-label': `Position of ${m.name}` });
       return el('div', { class: 'pt-row' },
         avatar(m),
         el('div', { class: 'pt-row-t' }, el('b', { text: m.name || 'No name' }), el('small', { text: ROLES[m.role] || 'Member' })),
         el('div', { class: 'pt-row-a' }, role, pos,
-          el('button', { class: 'btn', type: 'button', text: 'Save', onclick: e => act(e, () => updateDoc(doc(db, 'members', m.id), { role: role.value, position: pos.value.trim().slice(0, 80) })) }),
-          m.id !== me.id ? el('button', { class: 'btn ghost', type: 'button', text: 'Remove', onclick: e => act(e, () => removeMember(m.id), `Remove ${m.name || 'this member'} from the portal?`) }) : null));
+          el('button', { class: 'pt-btn', type: 'button', text: 'Save', onclick: e => act(e, () => updateDoc(doc(db, 'members', m.id), { role: role.value, position: pos.value.trim().slice(0, 80) })) }),
+          m.id !== me.id ? el('button', { class: 'pt-btn ghost', type: 'button', text: 'Remove', onclick: e => act(e, () => removeMember(m.id), `Remove ${m.name || 'this member'} from the portal?`) }) : null));
     }));
-  } catch (e) { console.error(e); pend.replaceChildren(el('p', { class: 'small bad', text: 'Could not load. Only the Secretary, President and portal admins can open this tab.' })); }
+  } catch (e) { console.error(e); pend.replaceChildren(el('p', { class: 'pt-empty bad', text: 'This list did not load. Only the Secretary, President and portal admins can open Manage.' })); }
 }
-// ---------- roster: people listed in advance by email ----------
+
+// roster: people listed in advance by email
 const ROLE_WORDS = Object.fromEntries(Object.entries(ROLES).flatMap(([k, v]) => [[k, k], [v.toLowerCase(), k]]));
 async function loadRoster() {
   const box = $('#pt-roster');
   try {
     const snap = await getDocs(collection(db, 'roster'));
     const list = snap.docs.map(d => ({ email: d.id, ...d.data() })).sort((a, b) => rank(b) - rank(a) || (a.name || '').localeCompare(b.name || ''));
-    $('#pt-roster-n').textContent = list.length ? `(${list.length})` : '';
+    $('#pt-roster-n').textContent = list.length ? String(list.length) : '';
     box.replaceChildren(...(list.length ? list.map(x => el('div', { class: 'pt-row' },
-      el('div', { class: 'pt-row-t' }, el('b', { text: x.name || x.email }), el('small', { text: `${x.position || ROLES[x.role] || ''} · ${x.email}` })),
-      el('div', { class: 'pt-row-a' }, el('button', { class: 'btn ghost', type: 'button', text: 'Remove', onclick: e => act(e, () => deleteDoc(doc(db, 'roster', x.email)), `Remove ${x.name || x.email} from the roster?`) })))) : [el('p', { class: 'small', text: 'Nobody on the roster yet.' })]));
-  } catch (e) { console.error(e); box.replaceChildren(el('p', { class: 'small bad', text: 'Could not load the roster.' })); }
+      el('div', { class: 'pt-row-t' }, el('b', { text: x.name || x.email }), el('small', { text: `${x.position || ROLES[x.role] || ''}, ${x.email}` })),
+      el('div', { class: 'pt-row-a' }, el('button', { class: 'pt-btn ghost', type: 'button', text: 'Remove', onclick: e => act(e, () => deleteDoc(doc(db, 'roster', x.email)), `Remove ${x.name || x.email} from the roster?`) })))) : [empty('No one is on the roster yet.')]));
+  } catch (e) { console.error(e); box.replaceChildren(el('p', { class: 'pt-empty bad', text: 'The roster did not load.' })); }
 }
 $('#pt-roster-form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -272,26 +466,35 @@ $('#pt-roster-form').addEventListener('submit', async e => {
     if (!/^[^@\s]+@[^@\s]+\.[a-z]+$/i.test(email || '') || !name || !k) { bad.push(l); continue; }
     rows.push({ email: email.toLowerCase(), name: name.slice(0, 80), role: k, position: pos.join(', ').slice(0, 80) });
   }
-  if (!rows.length) { say(msg, 'Nothing to add. Use one line per person: email, name, role, position', true); return; }
+  if (!rows.length) { say(msg, 'Nothing was added. Use one line per person: email, name, role, position', true); return; }
   const b = f.querySelector('button'); b.disabled = true; say(msg, `Adding ${rows.length}…`);
   try {
     for (const x of rows) await setDoc(doc(db, 'roster', x.email), { name: x.name, role: x.role, position: x.position });
     f.list.value = bad.join('\n');
-    say(msg, `Added ${rows.length}.` + (bad.length ? ` ${bad.length} line(s) were not understood and are left in the box.` : ''), !!bad.length);
+    say(msg, `Added ${rows.length} to the roster.` + (bad.length ? ` ${bad.length} line(s) were not understood and are left in the box.` : ''), !!bad.length);
     loadRoster();
-  } catch (err) { console.error(err); say(msg, 'Could not add. Only officers can change the roster.', true); }
+  } catch (err) { console.error(err); say(msg, 'The roster was not changed. Only officers can change it.', true); }
   b.disabled = false;
 });
 
 const removeMember = async id => { await deleteDoc(doc(db, 'members', id)); await deleteDoc(doc(db, 'contacts', id)).catch(() => {}); };
-// run an officer action, then reload the list (and refresh our own card if we changed ourselves)
+// run an officer action, then reload everything (and refresh our own details if we changed ourselves)
 async function act(e, fn, ask) {
   if (ask && !confirm(ask)) return;
   const b = e.currentTarget; b.disabled = true;
   try {
     await fn();
     const snap = await getDoc(doc(db, 'members', me.id));
-    if (snap.exists()) { me = { id: me.id, ...snap.data() }; renderProfile($('#pt-card'), me, true); }
+    if (snap.exists()) me = { id: me.id, ...snap.data() };
+    await loadData();
     loadManage();
-  } catch (err) { console.error(err); b.disabled = false; alert('That did not work. Please try again.'); }
+    toast('Saved.');
+  } catch (err) { console.error(err); b.disabled = false; toast('That change was not saved. Try again.', true); }
+}
+
+let toastT;
+function toast(msg, bad = false) {
+  const t = $('#pt-toast');
+  t.textContent = msg; t.classList.toggle('bad', bad); t.classList.add('on');
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3200);
 }
