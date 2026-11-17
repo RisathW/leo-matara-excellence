@@ -1670,3 +1670,38 @@ main:has(.chap) .chap+.wrap{margin-top:clamp(20px,3vw,32px)}
 [data-theme="dark"] .pt-mark{background:#0a1a2c}
 [data-theme="dark"] .pt-proj.is-mine .pt-date{color:#04070b}
 [data-theme="dark"] .pt-proj.is-mine .pt-date span{color:rgba(4,7,11,.75)}
+
+/* club awards: spotlight on the home page, hall of fame on the Team page */
+.aw-sec[hidden]{display:none}
+.aw-spot{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:20px;margin:8px 0 28px}
+.aw-card{display:grid;grid-template-columns:auto minmax(0,1fr);gap:24px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:clamp(20px,3vw,28px)}
+.aw-card .aw-face{width:clamp(104px,12vw,140px);height:clamp(104px,12vw,140px);font-size:2rem}
+.aw-face{width:56px;height:56px;border-radius:50%;object-fit:cover;object-position:50% 20%;background:var(--alt);flex:none}
+.aw-face-i{display:grid;place-items:center;color:#fff;font-weight:700;background:var(--gold-d)}
+.aw-what{font-size:.875rem;font-weight:700;color:var(--gold-d)}
+.aw-t h3{font-size:clamp(1.25rem,2.2vw,1.625rem);font-weight:700;margin:4px 0 2px}
+.aw-pos{font-size:.875rem;color:var(--muted)}
+.aw-cite{margin-top:10px;color:var(--ink);opacity:.85;max-width:52ch}
+.aw-list{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:10px}
+.aw-list li{display:flex;align-items:center;gap:14px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.aw-list div{display:grid;min-width:0}
+.aw-list b{font-size:.9375rem}
+.aw-list span{font-size:.8125rem;color:var(--muted)}
+@media(max-width:560px){.aw-card{grid-template-columns:1fr;justify-items:center;text-align:center}.aw-cite{margin-inline:auto}}
+/* portal: latest Leo of the Month on the overview, and the award form */
+.pt-spot{display:flex;align-items:center;gap:16px;margin-bottom:24px;padding:14px 18px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.pt-spot[hidden]{display:none}
+.pt-spot .pt-av{width:52px;height:52px}
+.pt-spot p{display:grid}
+.pt-spot span{font-size:.8125rem;font-weight:700;color:var(--gold-d)}
+.pt-spot b{font-size:1rem}
+.pt-spot small{font-size:.8125rem;color:var(--muted)}
+.pt-aform{margin:0 0 16px}
+.pt-aform select{font:inherit;font-size:.9375rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.pt-aform select:focus{outline:2px solid var(--gold);outline-offset:0;border-color:transparent}
+.pt-aform label[hidden]{display:none}
+[data-theme="dark"] .aw-face-i,[data-theme="dark"] .pt-av-i{color:#04070b}
+.aw-page .aw-spot{margin-top:0}
+.aw-all-h{margin:40px 0 16px}
+.aw-all-h[hidden],.aw-none[hidden]{display:none}
+.aw-none{color:var(--muted);font-size:1.0625rem}

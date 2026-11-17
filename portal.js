@@ -23,6 +23,14 @@ const db = getFirestore(app);
 const CLUB_EMAIL = 'leoclubofmataraexcellence@gmail.com';
 const ROLES = { member: 'Member', director: 'Director', exco: 'Executive Committee', secretary: 'Secretary', president: 'President', admin: 'Portal admin' };
 const OFFICER_ROLES = ['secretary', 'president', 'admin'];
+// awards: monthly ones are kept per month, the rest per Leo year
+const AWARDS = {
+  month: { name: 'Leo of the Month', monthly: true, single: true },
+  year: { name: 'Leo of the Year', single: true },
+  director: { name: 'Outstanding Director of the Year', single: true },
+  exco: { name: 'Outstanding Executive Member of the Year', single: true },
+  special: { name: 'Special Recognition' }
+};
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const $ = s => document.querySelector(s);
@@ -52,13 +60,20 @@ const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${Stri
 const leoYear = iso => { const [y, m] = iso.split('-').map(Number); return m >= 7 ? y : y - 1; };
 const lyLabel = y => `${y}/${String((y + 1) % 100).padStart(2, '0')}`;
 const THIS_LY = leoYear(todayISO());
+const awardLabel = a => AWARDS[a.type].monthly
+  ? `${AWARDS[a.type].name}, ${MONTHS[Number(a.period.slice(5, 7)) - 1]} ${a.period.slice(0, 4)}`
+  : `${AWARDS[a.type].name} ${lyLabel(Number(a.period))}`;
+// newest first: monthly awards by month; year awards count as the end of their Leo year
+const awardKey = a => AWARDS[a.type].monthly ? a.period : `${Number(a.period) + 1}-06`;
+const awardOrder = (x, y) => awardKey(y).localeCompare(awardKey(x)) || (x.type === 'year' ? -1 : 1);
+const awardsOf = uid => awards.filter(a => a.memberId === uid);
 const niceDate = iso => { const [y, m, d] = iso.split('-').map(Number); return `${d} ${MONTHS[m - 1]} ${y}`; };
 
 const views = ['pt-loading', 'pt-out', 'pt-pending', 'pt-app'];
 const show = id => views.forEach(v => { $('#' + v).hidden = v !== id; });
 
 let me = null, user = null, officer = false;
-let members = [], projects = [];
+let members = [], projects = [], awards = [];
 
 // ---------- sign-in ----------
 const AUTH_WHY = {
@@ -131,10 +146,12 @@ onAuthStateChanged(auth, async u => {
 });
 
 async function loadData() {
-  const [m, p] = await Promise.all([
+  const [m, p, a] = await Promise.all([
     getDocs(query(collection(db, 'members'), where('status', '==', 'approved'))),
-    getDocs(collection(db, 'projects'))
+    getDocs(collection(db, 'projects')),
+    getDocs(collection(db, 'awards')).catch(() => ({ docs: [] }))
   ]);
+  awards = a.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => AWARDS[x.type]).sort(awardOrder);
   members = m.docs.map(d => ({ id: d.id, ...d.data() }));
   projects = p.docs.map(d => ({ id: d.id, ...d.data() })).filter(x => /^\d{4}-\d{2}-\d{2}$/.test(x.date || ''))
     .sort((a, b) => b.date.localeCompare(a.date));
@@ -191,10 +208,20 @@ function renderOverview() {
   const next = projects.filter(p => p.date > todayISO()).reverse().slice(0, 3);
   $('#pt-recent').replaceChildren(...(mine.length ? mine.map(p => projRow(p, false)) : [empty('No projects recorded for you yet. The Secretary marks attendance after each project.')]));
   $('#pt-next').replaceChildren(...(next.length ? next.map(p => projRow(p, false)) : [empty('No upcoming projects added yet.')]));
-  const aw = me.awards || [];
+  const aw = awardsOf(me.id);
   $('#pt-awards-box').hidden = !aw.length;
-  $('#pt-awards').replaceChildren(...aw.map(a => el('li', { text: a })));
+  $('#pt-awards').replaceChildren(...aw.map(a => el('li', { text: awardLabel(a) })));
+  // the club's latest Leo of the Month, for everyone
+  const lm = awards.find(a => a.type === 'month');
+  const box = $('#pt-spot');
+  box.hidden = !lm;
+  if (lm) {
+    const m = memberById(lm.memberId) || lm;
+    box.replaceChildren(avatar(m),
+      el('p', {}, el('span', { text: awardLabel(lm) }), el('b', { text: lm.name }), lm.citation ? el('small', { text: lm.citation }) : null));
+  }
 }
+const memberById = id => members.find(m => m.id === id);
 const fig = (n, label, sub) => el('div', { class: 'pt-fig' }, el('b', { text: String(n) }), el('span', { text: label }), el('small', { text: sub }));
 const empty = t => el('p', { class: 'pt-empty', text: t });
 
@@ -373,7 +400,7 @@ function renderBoard() {
   $('#pt-board-list').replaceChildren(...(rows.length ? rows.map((r, i) => el('li', { class: 'pt-rank' + (r.m.id === me.id ? ' is-me' : '') },
     el('span', { class: 'pt-rank-n', text: String(i + 1) }),
     avatar(r.m),
-    el('span', { class: 'pt-rank-t' }, el('b', { text: r.m.name || 'Member' }), el('small', { text: `${roleLine(r.m)}, ${plural(r.s.projects, 'project')}, ${r.s.hours} h` })),
+    el('span', { class: 'pt-rank-t' }, el('b', { text: r.m.name || 'Member' }), el('small', { text: `${roleLine(r.m)}, ${plural(r.s.projects, 'project')}, ${r.s.hours} h${awardsOf(r.m.id).length ? ', ' + plural(awardsOf(r.m.id).length, 'award') : ''}` })),
     el('span', { class: 'pt-rank-bar', 'aria-hidden': 'true' }, el('i', { style: `width:${Math.max(4, r.s.points / max * 100)}%` })),
     el('span', { class: 'pt-rank-p', text: `${r.s.points} pts` }))) : [empty('Points appear here once attendance is recorded for a project.')]));
 }
@@ -403,7 +430,7 @@ function openMember(m) {
       el('div', {}, el('h3', { text: m.name || 'Member' }), el('p', { text: roleLine(m) }), m.school ? el('p', { class: 'pt-muted', text: m.school }) : null)),
     m.bio ? el('p', { class: 'pt-bio', text: m.bio }) : null,
     el('div', { class: 'pt-figs pt-figs-sm' }, fig(s.projects, 'projects', `${all.projects} in total`), fig(s.hours, 'hours', `${all.hours} in total`), fig(s.points, 'points', `${all.points} in total`)),
-    (m.awards || []).length ? el('ul', { class: 'pt-awards' }, m.awards.map(a => el('li', { text: a }))) : null,
+    awardsOf(m.id).length ? el('ul', { class: 'pt-awards' }, awardsOf(m.id).map(a => el('li', { text: awardLabel(a) }))) : null,
     done.length ? el('div', { class: 'pt-rows' }, done.map(p => projRow(p, false))) : null);
   mdlg.showModal();
 }
@@ -414,6 +441,8 @@ async function loadManage() {
   pend.replaceChildren(empty('Loading…'));
   all.replaceChildren();
   loadRoster();
+  drawAwardForm();
+  drawAwards();
   try {
     const p = await getDocs(query(collection(db, 'members'), where('status', '==', 'pending')));
     const pending = p.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -498,3 +527,44 @@ function toast(msg, bad = false) {
   t.textContent = msg; t.classList.toggle('bad', bad); t.classList.add('on');
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3200);
 }
+
+// ---------- awards (officers announce; everyone, and the public website, can see them) ----------
+const aform = $('#pt-aform');
+aform.type.replaceChildren(...Object.entries(AWARDS).map(([k, v]) => el('option', { value: k, text: v.name })));
+aform.type.addEventListener('change', drawAwardForm);
+function drawAwardForm() {
+  const monthly = AWARDS[aform.type.value].monthly;
+  $('#pt-a-month').hidden = !monthly; $('#pt-a-year').hidden = monthly;
+  if (!aform.month.value) { const d = new Date(); d.setMonth(d.getMonth() - 1); aform.month.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
+  if (!aform.ly.options.length) aform.ly.replaceChildren(...[THIS_LY, THIS_LY - 1, THIS_LY - 2].map(y => el('option', { value: String(y), text: `Leo year ${lyLabel(y)}` })));
+  const cur = aform.member.value;
+  aform.member.replaceChildren(el('option', { value: '', text: 'Choose a Leo' }),
+    ...[...members].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(m => el('option', { value: m.id, text: `${m.name}${m.position ? ' (' + m.position + ')' : ''}` })));
+  aform.member.value = cur;
+}
+function drawAwards() {
+  $('#pt-alist-aw').replaceChildren(...(awards.length ? awards.map(a => el('div', { class: 'pt-row' },
+    avatar(memberById(a.memberId) || a),
+    el('div', { class: 'pt-row-t' }, el('b', { text: a.name }), el('small', { text: awardLabel(a) + (a.citation ? `. ${a.citation}` : '') })),
+    el('div', { class: 'pt-row-a' }, el('button', { class: 'pt-btn ghost', type: 'button', text: 'Withdraw', onclick: e => act(e, () => deleteDoc(doc(db, 'awards', a.id)), `Withdraw "${awardLabel(a)}" from ${a.name}? It will disappear from the website.`) })))) : [empty('No awards announced yet.')]));
+}
+aform.addEventListener('submit', async e => {
+  e.preventDefault();
+  const msg = $('#pt-aform-msg'), type = aform.type.value, A = AWARDS[type];
+  const period = A.monthly ? aform.month.value : aform.ly.value;
+  const m = memberById(aform.member.value);
+  if (!/^\d{4}(-\d{2})?$/.test(period || '')) { say(msg, A.monthly ? 'Choose the month.' : 'Choose the Leo year.', true); return; }
+  if (!m) { say(msg, 'Choose the Leo who receives the award.', true); aform.member.focus(); return; }
+  const data = { type, period, memberId: m.id, name: m.name || '', position: m.position || '', photo: m.photo || '', citation: aform.citation.value.trim().slice(0, 280), createdAt: serverTimestamp() };
+  const label = awardLabel(data);
+  const ref = A.single ? doc(db, 'awards', `${type}-${period}`) : null;
+  if (A.single && awards.some(a => a.id === ref.id) && !confirm(`${label} has already been announced. Replace it with ${m.name}?`)) return;
+  const b = aform.querySelector('button[type=submit]'); b.disabled = true;
+  try {
+    if (ref) await setDoc(ref, data); else await addDoc(collection(db, 'awards'), data);
+    aform.citation.value = ''; aform.member.value = '';
+    await loadData(); drawAwards();
+    say(msg, ''); toast(`${label} announced for ${m.name}. It now shows on the website.`);
+  } catch (err) { console.error(err); say(msg, 'The award was not saved. Only the Secretary, President and portal admins can announce awards.', true); }
+  b.disabled = false;
+});
