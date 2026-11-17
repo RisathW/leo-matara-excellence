@@ -40,7 +40,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Bebas+Neue&family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,700;1,700&family=Noto+Serif+Sinhala:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.dataset.theme="dark";try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>.loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff}[data-theme="dark"] .loader{background:#04070b}.lg{width:clamp(170px,30vw,230px)}.lg img{display:block;width:100%;height:auto}.lg img.lg-dark{display:none}[data-theme="dark"] .lg img.lg-light{display:none}[data-theme="dark"] .lg img.lg-dark{display:block}.loader.done{opacity:0;visibility:hidden}</style>
-<link rel="stylesheet" href="style.css?v=165">
+<link rel="stylesheet" href="style.css?v=168">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -104,7 +104,7 @@
       <nav class="pt-nav">
         <button type="button" data-panel="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Overview</button>
         <button type="button" data-panel="projects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v17l-7-4-7 4z"/></svg>Projects</button>
-        <button type="button" data-panel="board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Leaderboard</button>
+        <button type="button" data-panel="board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg><span class="l-long">Leaderboard</span><span class="l-short" aria-hidden="true">Ranks</span></button>
         <button type="button" data-panel="members"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.7-3.3 3.3-5.3 6.5-5.3s5.8 2 6.5 5.3M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.9c1.9.7 3.2 2.6 3.5 5.1"/></svg>Members</button>
         <button type="button" data-panel="give" id="pt-nav-give"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-3 5 3-1.5-8"/></svg>Awards</button>
         <button type="button" data-panel="manage" id="pt-nav-manage" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Manage <span id="pt-pend-n" class="pt-badge"></span></button>
