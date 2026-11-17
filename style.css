@@ -1721,3 +1721,22 @@ main:has(.chap) .chap+.wrap{margin-top:clamp(20px,3vw,32px)}
 .pt-photo-a{display:flex;gap:8px;flex-wrap:wrap}
 .pt-photo-a [hidden]{display:none}
 .pt-photo .form-status:empty{display:none}
+/* awards: search for the Leo */
+.pt-pickone{display:grid;gap:6px}
+.pt-pickone>label{font-size:.8125rem;font-weight:600;color:var(--muted)}
+.pt-pickone input[type=search]{font:inherit;font-size:.9375rem;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%}
+.pt-pickone input[type=search]:focus{outline:2px solid var(--gold);outline-offset:0;border-color:transparent}
+.pt-pickone input[hidden]{display:none}
+.pt-a-results{display:grid;gap:2px}
+.pt-a-results:not(:empty){border:1px solid var(--line);border-radius:12px;padding:4px;background:var(--surface)}
+.pt-a-results button{display:flex;align-items:center;gap:12px;width:100%;font:inherit;color:inherit;text-align:left;background:none;border:0;border-radius:9px;padding:8px 10px;cursor:pointer}
+.pt-a-results button:hover,.pt-a-results button:focus-visible{background:var(--alt);outline:none;box-shadow:inset 3px 0 0 var(--gold)}
+.pt-a-results .pt-av,.pt-a-chosen .pt-av{width:36px;height:36px}
+.pt-a-results span,.pt-a-chosen span{display:grid;min-width:0;flex:1}
+.pt-a-results b,.pt-a-chosen b{font-size:.9375rem;font-weight:600;color:var(--ink)}
+.pt-a-results small,.pt-a-chosen small{font-size:.75rem;color:var(--muted);font-weight:400}
+.pt-a-results .pt-empty{padding:8px 10px}
+.pt-a-chosen{display:flex;align-items:center;gap:12px;border:1px solid var(--gold);border-radius:12px;padding:8px 10px;background:var(--surface)}
+.pt-a-chosen[hidden]{display:none}
+.pt-a-chosen .pt-btn{padding:7px 14px}
+.pt-a-results span.pt-av,.pt-a-chosen span.pt-av{flex:none;display:grid;place-items:center;min-width:0;font-size:.75rem}

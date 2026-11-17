@@ -563,10 +563,41 @@ function drawAwardForm() {
   $('#pt-a-month').hidden = !monthly; $('#pt-a-year').hidden = monthly;
   if (!aform.month.value) { const d = new Date(); d.setMonth(d.getMonth() - 1); aform.month.value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
   if (!aform.ly.options.length) aform.ly.replaceChildren(...[THIS_LY, THIS_LY - 1, THIS_LY - 2].map(y => el('option', { value: String(y), text: `Leo year ${lyLabel(y)}` })));
-  const cur = aform.member.value;
-  aform.member.replaceChildren(el('option', { value: '', text: 'Choose a Leo' }),
-    ...[...members].sort((a, b) => (a.name || '').localeCompare(b.name || '')).map(m => el('option', { value: m.id, text: `${m.name}${m.position ? ' (' + m.position + ')' : ''}` })));
-  aform.member.value = cur;
+  if (!aform.member.value) clearPick();
+}
+// search for the Leo who receives the award, then tap them
+const aSearch = $('#pt-a-search'), aResults = $('#pt-a-results'), aChosen = $('#pt-a-chosen');
+aSearch.addEventListener('input', findLeo);
+aSearch.addEventListener('focus', findLeo);
+aSearch.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown') { const f = aResults.querySelector('button'); if (f) { e.preventDefault(); f.focus(); } }
+  if (e.key === 'Enter') { const f = aResults.querySelector('button'); if (f) { e.preventDefault(); f.click(); } }
+});
+aResults.addEventListener('keydown', e => {
+  const b = [...aResults.querySelectorAll('button')], i = b.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown' && i < b.length - 1) { e.preventDefault(); b[i + 1].focus(); }
+  if (e.key === 'ArrowUp') { e.preventDefault(); (i > 0 ? b[i - 1] : aSearch).focus(); }
+  if (e.key === 'Escape') { aResults.replaceChildren(); aSearch.focus(); }
+});
+function findLeo() {
+  const q = aSearch.value.trim().toLowerCase();
+  if (!q) { aResults.replaceChildren(); return; }
+  const words = q.split(/\s+/);
+  const hits = members.filter(m => { const t = `${m.name} ${m.position} ${ROLES[m.role] || ''}`.toLowerCase(); return words.every(w => t.includes(w)); })
+    .sort((a, b) => (a.name || '').localeCompare(b.name || '')).slice(0, 8);
+  aResults.replaceChildren(...(hits.length ? hits.map(m => el('button', { type: 'button', role: 'option', onclick: () => pickLeo(m) },
+    avatar(m), el('span', {}, el('b', { text: m.name || 'Member' }), el('small', { text: roleLine(m) })))) : [el('p', { class: 'pt-empty', text: 'No Leo matches that. Check the spelling, or approve them first.' })]));
+}
+function pickLeo(m) {
+  aform.member.value = m.id;
+  aResults.replaceChildren(); aSearch.value = ''; aSearch.hidden = true;
+  fill(aChosen, avatar(m), el('span', {}, el('b', { text: m.name || 'Member' }), el('small', { text: roleLine(m) })),
+    el('button', { class: 'pt-btn ghost', type: 'button', text: 'Change', onclick: () => { clearPick(); aSearch.focus(); } }));
+  aChosen.hidden = false;
+}
+function clearPick() {
+  aform.member.value = ''; aChosen.hidden = true; aChosen.replaceChildren();
+  aSearch.hidden = false; aSearch.value = ''; aResults.replaceChildren();
 }
 function drawAwards() {
   $('#pt-alist-aw').replaceChildren(...(awards.length ? awards.map(a => el('div', { class: 'pt-row' },
@@ -580,7 +611,7 @@ aform.addEventListener('submit', async e => {
   const period = A.monthly ? aform.month.value : aform.ly.value;
   const m = memberById(aform.member.value);
   if (!/^\d{4}(-\d{2})?$/.test(period || '')) { say(msg, A.monthly ? 'Choose the month.' : 'Choose the Leo year.', true); return; }
-  if (!m) { say(msg, 'Choose the Leo who receives the award.', true); aform.member.focus(); return; }
+  if (!m) { say(msg, 'Search for the Leo who receives the award and tap their name.', true); aSearch.hidden = false; aSearch.focus(); return; }
   const data = { type, period, memberId: m.id, name: m.name || '', position: m.position || '', photo: m.photo || '', citation: aform.citation.value.trim().slice(0, 280), createdAt: serverTimestamp() };
   const label = awardLabel(data);
   const ref = A.single ? doc(db, 'awards', `${type}-${period}`) : null;
@@ -588,7 +619,7 @@ aform.addEventListener('submit', async e => {
   const b = aform.querySelector('button[type=submit]'); b.disabled = true;
   try {
     if (ref) await setDoc(ref, data); else await addDoc(collection(db, 'awards'), data);
-    aform.citation.value = ''; aform.member.value = '';
+    aform.citation.value = ''; clearPick();
     await loadData(); drawAwards();
     say(msg, ''); toast(`${label} announced for ${m.name}. It now shows on the website.`);
   } catch (err) { console.error(err); say(msg, 'The award was not saved. Only the Secretary, President and portal admins can announce awards.', true); }
