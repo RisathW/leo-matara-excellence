@@ -40,7 +40,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Bebas+Neue&family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,700;1,700&family=Noto+Serif+Sinhala:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.dataset.theme="dark";try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>.loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff}[data-theme="dark"] .loader{background:#04070b}.lg{width:clamp(170px,30vw,230px)}.lg img{display:block;width:100%;height:auto}.lg img.lg-dark{display:none}[data-theme="dark"] .lg img.lg-light{display:none}[data-theme="dark"] .lg img.lg-dark{display:block}.loader.done{opacity:0;visibility:hidden}</style>
-<link rel="stylesheet" href="style.css?v=159">
+<link rel="stylesheet" href="style.css?v=160">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -106,6 +106,7 @@
         <button type="button" data-panel="projects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v17l-7-4-7 4z"/></svg>Projects</button>
         <button type="button" data-panel="board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Leaderboard</button>
         <button type="button" data-panel="members"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.7-3.3 3.3-5.3 6.5-5.3s5.8 2 6.5 5.3M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.9c1.9.7 3.2 2.6 3.5 5.1"/></svg>Members</button>
+        <button type="button" data-panel="give" id="pt-nav-give" class="pt-officer" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-3 5 3-1.5-8"/></svg>Awards</button>
         <button type="button" data-panel="manage" id="pt-nav-manage" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Manage <span id="pt-pend-n" class="pt-badge"></span></button>
       </nav>
       <button class="pt-out pt-signout" type="button">Sign out</button>
@@ -167,14 +168,36 @@
       </section>
 
       <section class="pt-panel" id="pt-manage" aria-labelledby="pt-manage-h" hidden>
-        <header class="pt-head"><h1 id="pt-manage-h">Manage</h1><p>Approve new accounts, set roles and positions, and list people in advance.</p></header>
-        <h2 class="pt-h">Waiting for approval</h2>
-        <div id="pt-pend" class="pt-list"></div>
-        <h2 class="pt-h">Roles and positions</h2>
-        <p class="pt-lead">Choose a role and type the position, then press Save. At handover, give next year's President the President role.</p>
-        <div id="pt-all" class="pt-list"></div>
-        <h2 class="pt-h">Awards</h2>
-        <p class="pt-lead">Announce Leo of the Month and the year's awards. They appear on the winner's profile, on the home page and the Award winners page straight away.</p>
+        <header class="pt-head"><h1 id="pt-manage-h">Manage</h1><p>Approve new accounts, promote members and list people in advance.</p></header>
+        <div class="pt-sub" role="tablist" aria-label="Manage">
+          <button type="button" role="tab" id="pt-mt-approve" aria-controls="pt-m-approve" data-mtab="approve">Approvals <span id="pt-pend-n2" class="pt-badge"></span></button>
+          <button type="button" role="tab" id="pt-mt-roles" aria-controls="pt-m-roles" data-mtab="roles">Positions and promotions</button>
+          <button type="button" role="tab" id="pt-mt-roster" aria-controls="pt-m-roster" data-mtab="roster">Roster <span id="pt-roster-n" class="pt-badge"></span></button>
+        </div>
+
+        <div class="pt-mpart" id="pt-m-approve" role="tabpanel" aria-labelledby="pt-mt-approve">
+          <p class="pt-lead">People who signed in but are not on the roster. Approve members of the club; decline anyone you do not know.</p>
+          <div id="pt-pend" class="pt-list"></div>
+        </div>
+
+        <div class="pt-mpart" id="pt-m-roles" role="tabpanel" aria-labelledby="pt-mt-roles" hidden>
+          <p class="pt-lead">Choose a role and type the position, then press Save. At handover, give next year's President the President role and move the outgoing officers to their new positions.</p>
+          <label class="pt-search pt-msearch"><span class="sr-only">Find a member</span><input id="pt-rsearch" type="search" placeholder="Find a member"></label>
+          <div id="pt-all" class="pt-list"></div>
+        </div>
+
+        <div class="pt-mpart" id="pt-m-roster" role="tabpanel" aria-labelledby="pt-mt-roster" hidden>
+          <p class="pt-lead">People on the roster are approved with their role and position the first time they sign in with that email. Add one person per line: email, name, role, position. Roles: member, director, exco, secretary, president, admin.</p>
+          <form id="pt-roster-form" class="pt-roster-form" novalidate>
+            <label><span class="sr-only">People to add</span><textarea name="list" rows="5" placeholder="nimal@gmail.com, Nimal Perera, director, Director of PR" spellcheck="false"></textarea></label>
+            <div class="pt-form-end"><button class="pt-btn" type="submit">Add to roster</button><p id="pt-roster-msg" class="form-status" role="status"></p></div>
+          </form>
+          <div id="pt-roster" class="pt-list"></div>
+        </div>
+      </section>
+
+      <section class="pt-panel" id="pt-give" aria-labelledby="pt-give-h" hidden>
+        <header class="pt-head"><h1 id="pt-give-h">Awards</h1><p>Announce Leo of the Month and the year's awards. They appear on the winner's profile, on the home page and the Award winners page straight away.</p></header>
         <form id="pt-aform" class="pt-fields pt-aform" novalidate>
           <label>Award<select name="type"></select></label>
           <label id="pt-a-month">Month<input name="month" type="month"></label>
@@ -183,14 +206,8 @@
           <label class="wide">Why they receive it<textarea name="citation" rows="2" maxlength="280" placeholder="One or two sentences for the website, for example: Led the Polhena beach clean-up and served at every project in October."></textarea></label>
           <div class="wide pt-form-end"><button class="pt-btn" type="submit">Announce award</button><p id="pt-aform-msg" class="form-status" role="status"></p></div>
         </form>
+        <h2 class="pt-h">Announced</h2>
         <div id="pt-alist-aw" class="pt-list"></div>
-        <h2 class="pt-h">Roster <span id="pt-roster-n" class="pt-badge"></span></h2>
-        <p class="pt-lead">People on the roster are approved with their role and position the first time they sign in with that email. Add one person per line: email, name, role, position. Roles: member, director, exco, secretary, president, admin.</p>
-        <form id="pt-roster-form" class="pt-roster-form" novalidate>
-          <label><span class="sr-only">People to add</span><textarea name="list" rows="5" placeholder="nimal@gmail.com, Nimal Perera, director, Director of PR" spellcheck="false"></textarea></label>
-          <div class="pt-form-end"><button class="pt-btn" type="submit">Add to roster</button><p id="pt-roster-msg" class="form-status" role="status"></p></div>
-        </form>
-        <div id="pt-roster" class="pt-list"></div>
       </section>
     </div>
   </div>
@@ -245,6 +262,6 @@
 <script src="team-data.js?v=15"></script>
 <script src="team.js?v=3"></script>
 <script src="script.js?v=42"></script>
-<script type="module" src="portal.js?v=6"></script>
+<script type="module" src="portal.js?v=7"></script>
 </body>
 </html>

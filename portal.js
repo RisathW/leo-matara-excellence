@@ -177,7 +177,7 @@ navs().forEach(b => b.addEventListener('click', () => openPanel(b.dataset.panel)
 function openPanel(name) {
   navs().forEach(b => b.toggleAttribute('aria-current', b.dataset.panel === name));
   document.querySelectorAll('.pt-panel').forEach(p => { p.hidden = p.id !== 'pt-' + name; });
-  ({ overview: renderOverview, projects: renderProjects, board: renderBoard, members: renderMembers, manage: loadManage })[name]();
+  ({ overview: renderOverview, projects: renderProjects, board: renderBoard, members: renderMembers, manage: loadManage, give: () => { drawAwardForm(); drawAwards(); } })[name]();
   const main = $('.pt-main');
   if (main.getBoundingClientRect().top < 0) main.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -441,8 +441,6 @@ async function loadManage() {
   pend.replaceChildren(empty('Loading…'));
   all.replaceChildren();
   loadRoster();
-  drawAwardForm();
-  drawAwards();
   try {
     const p = await getDocs(query(collection(db, 'members'), where('status', '==', 'pending')));
     const pending = p.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -450,7 +448,7 @@ async function loadManage() {
       const c = await getDoc(doc(db, 'contacts', m.id)).catch(() => null);
       return [m.id, c && c.exists() ? c.data().email : ''];
     })));
-    $('#pt-pend-n').textContent = pending.length ? String(pending.length) : '';
+    $('#pt-pend-n').textContent = $('#pt-pend-n2').textContent = pending.length ? String(pending.length) : '';
     pend.replaceChildren(...(pending.length ? pending.map(m => el('div', { class: 'pt-row' },
       avatar(m),
       el('div', { class: 'pt-row-t' }, el('b', { text: m.name || 'No name' }), el('small', { text: contacts[m.id] || '' })),
@@ -462,14 +460,37 @@ async function loadManage() {
     all.replaceChildren(...[...members].sort((x, y) => rank(y) - rank(x) || (x.name || '').localeCompare(y.name || '')).map(m => {
       const role = el('select', { 'aria-label': `Role of ${m.name}` }, Object.entries(ROLES).map(([k, v]) => el('option', { value: k, text: v, selected: k === m.role })));
       const pos = el('input', { type: 'text', value: m.position || '', maxlength: '80', placeholder: 'Position, for example Treasurer', 'aria-label': `Position of ${m.name}` });
-      return el('div', { class: 'pt-row' },
+      return el('div', { class: 'pt-row', 'data-name': `${m.name} ${m.position}`.toLowerCase() },
         avatar(m),
-        el('div', { class: 'pt-row-t' }, el('b', { text: m.name || 'No name' }), el('small', { text: ROLES[m.role] || 'Member' })),
+        el('div', { class: 'pt-row-t' }, el('b', { text: m.name || 'No name' }), el('small', { text: [...new Set([ROLES[m.role] || 'Member', m.position].filter(Boolean))].join(', ') })),
         el('div', { class: 'pt-row-a' }, role, pos,
           el('button', { class: 'pt-btn', type: 'button', text: 'Save', onclick: e => act(e, () => updateDoc(doc(db, 'members', m.id), { role: role.value, position: pos.value.trim().slice(0, 80) })) }),
           m.id !== me.id ? el('button', { class: 'pt-btn ghost', type: 'button', text: 'Remove', onclick: e => act(e, () => removeMember(m.id), `Remove ${m.name || 'this member'} from the portal?`) }) : null));
     }));
+    filterRoles();
   } catch (e) { console.error(e); pend.replaceChildren(el('p', { class: 'pt-empty bad', text: 'This list did not load. Only the Secretary, President and portal admins can open Manage.' })); }
+}
+
+// the three parts of Manage
+let mtab = 'approve';
+document.querySelectorAll('[data-mtab]').forEach(b => b.addEventListener('click', () => openMtab(b.dataset.mtab)));
+function openMtab(name) {
+  mtab = name;
+  document.querySelectorAll('[data-mtab]').forEach(b => { const on = b.dataset.mtab === name; b.setAttribute('aria-selected', String(on)); b.tabIndex = on ? 0 : -1; });
+  document.querySelectorAll('.pt-mpart').forEach(p => { p.hidden = p.id !== 'pt-m-' + name; });
+}
+$('.pt-sub').addEventListener('keydown', e => {
+  if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+  const t = [...document.querySelectorAll('[data-mtab]')], i = t.indexOf(document.activeElement);
+  if (i < 0) return;
+  const n = t[(i + (e.key === 'ArrowRight' ? 1 : t.length - 1)) % t.length];
+  n.focus(); openMtab(n.dataset.mtab);
+});
+openMtab('approve');
+$('#pt-rsearch').addEventListener('input', filterRoles);
+function filterRoles() {
+  const q = $('#pt-rsearch').value.trim().toLowerCase();
+  document.querySelectorAll('#pt-all .pt-row').forEach(r => { r.hidden = !!q && !r.dataset.name.includes(q); });
 }
 
 // roster: people listed in advance by email
@@ -516,7 +537,7 @@ async function act(e, fn, ask) {
     const snap = await getDoc(doc(db, 'members', me.id));
     if (snap.exists()) me = { id: me.id, ...snap.data() };
     await loadData();
-    loadManage();
+    if (!$('#pt-give').hidden) drawAwards(); else loadManage();
     toast('Saved.');
   } catch (err) { console.error(err); b.disabled = false; toast('That change was not saved. Try again.', true); }
 }

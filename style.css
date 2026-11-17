@@ -1705,3 +1705,12 @@ main:has(.chap) .chap+.wrap{margin-top:clamp(20px,3vw,32px)}
 .aw-all-h{margin:40px 0 16px}
 .aw-all-h[hidden],.aw-none[hidden]{display:none}
 .aw-none{color:var(--muted);font-size:1.0625rem}
+/* Manage: three separate parts */
+.pt-sub{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line);margin-bottom:24px}
+.pt-sub button{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:.9375rem;font-weight:600;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 14px;cursor:pointer}
+.pt-sub button:hover{color:var(--ink)}
+.pt-sub button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--gold)}
+.pt-sub button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.pt-sub .pt-badge{margin-left:0}
+.pt-mpart[hidden],.pt-row[hidden]{display:none}
+.pt-msearch{display:block;max-width:360px;margin-bottom:14px}
