@@ -89,7 +89,9 @@ onAuthStateChanged(auth, async u => {
   } catch (e) {
     console.error(e);
     show('pt-out');
-    say($('#pt-out-msg'), 'The portal could not load your account. Please try again later.', true);
+    const why = e.code === 'permission-denied' ? ' (the database rules blocked it)'
+      : e.code === 'unavailable' ? ' (no connection to the database)' : e.code ? ` (${e.code})` : '';
+    say($('#pt-out-msg'), `The portal could not load your account${why}. Please try again later.`, true);
   }
 });
 
