@@ -47,6 +47,8 @@ const el = (tag, props = {}, ...kids) => {
   kids.flat().forEach(c => c != null && c !== false && n.append(c));
   return n;
 };
+// fill a node with children, skipping the optional ones that are empty
+const fill = (node, ...kids) => node.replaceChildren(...kids.flat().filter(c => c != null && c !== false));
 const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 const avatar = (m, cls = '') => m.photo
   ? el('img', { class: 'pt-av ' + cls, src: m.photo, alt: '', referrerpolicy: 'no-referrer', loading: 'lazy' })
@@ -189,6 +191,9 @@ function renderApp() {
   document.querySelectorAll('.pt-officer').forEach(n => { n.hidden = !officer; });
   const f = $('#pt-form');
   f.name.value = me.name || ''; f.school.value = me.school || ''; f.bio.value = me.bio || '';
+  fill($('#pt-photo-prev'), avatar(me, 'pt-av-lg'));
+  $('#pt-photo-google').hidden = !user.photoURL || me.photo === user.photoURL;
+  $('#pt-photo-none').hidden = !me.photo;
   openPanel('overview');
 }
 
@@ -217,7 +222,7 @@ function renderOverview() {
   box.hidden = !lm;
   if (lm) {
     const m = memberById(lm.memberId) || lm;
-    box.replaceChildren(avatar(m),
+    fill(box, avatar(m),
       el('p', {}, el('span', { text: awardLabel(lm) }), el('b', { text: lm.name }), lm.citation ? el('small', { text: lm.citation }) : null));
   }
 }
@@ -425,7 +430,7 @@ const mdlg = $('#pt-mdlg');
 function openMember(m) {
   const s = statsFor(m.id, THIS_LY), all = statsFor(m.id);
   const done = projects.filter(p => (p.attendees || []).includes(m.id) && p.date <= todayISO()).slice(0, 6);
-  $('#pt-mdlg-body').replaceChildren(
+  fill($('#pt-mdlg-body'),
     el('div', { class: 'pt-mhead' }, avatar(m, 'pt-av-lg'),
       el('div', {}, el('h3', { text: m.name || 'Member' }), el('p', { text: roleLine(m) }), m.school ? el('p', { class: 'pt-muted', text: m.school }) : null)),
     m.bio ? el('p', { class: 'pt-bio', text: m.bio }) : null,
@@ -589,3 +594,43 @@ aform.addEventListener('submit', async e => {
   } catch (err) { console.error(err); say(msg, 'The award was not saved. Only the Secretary, President and portal admins can announce awards.', true); }
   b.disabled = false;
 });
+
+// ---------- profile photo ----------
+const photoIn = $('#pt-photo-in'), photoMsg = $('#pt-photo-msg');
+$('#pt-photo-pick').addEventListener('click', () => photoIn.click());
+$('#pt-photo-google').addEventListener('click', () => savePhoto(user.photoURL || '', 'Your Google photo is back on your profile.'));
+$('#pt-photo-none').addEventListener('click', () => savePhoto('', 'Photo removed. Your initials show instead.'));
+photoIn.addEventListener('change', async () => {
+  const f = photoIn.files[0];
+  photoIn.value = '';
+  if (!f) return;
+  if (!/^image\//.test(f.type)) { say(photoMsg, 'Choose a picture file, such as a JPG or PNG.', true); return; }
+  if (f.size > 15e6) { say(photoMsg, 'That picture is larger than 15 MB. Choose a smaller one.', true); return; }
+  say(photoMsg, 'Preparing your photo…');
+  try { await savePhoto(await squarePhoto(f), 'New photo saved.'); }
+  catch (e) { console.error(e); say(photoMsg, 'That picture could not be read. Try a JPG or PNG.', true); }
+});
+// crop the middle square (a little above centre, where faces usually are) and shrink it to 320 x 320
+async function squarePhoto(file) {
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = url; });
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    const sx = (img.naturalWidth - side) / 2, sy = Math.max(0, (img.naturalHeight - side) * 0.3);
+    const c = document.createElement('canvas'); c.width = c.height = 320;
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
+    g.drawImage(img, sx, sy, side, side, 0, 0, 320, 320);
+    let q = 0.86, out = c.toDataURL('image/jpeg', q);
+    while (out.length > 90000 && q > 0.5) { q -= 0.08; out = c.toDataURL('image/jpeg', q); }
+    return out;
+  } finally { URL.revokeObjectURL(url); }
+}
+async function savePhoto(photo, done) {
+  try {
+    await updateDoc(doc(db, 'members', me.id), { photo });
+    me.photo = photo;
+    const mm = members.find(m => m.id === me.id); if (mm) mm.photo = photo;
+    renderApp(); $('.pt-edit').open = true;
+    say(photoMsg, done);
+  } catch (e) { console.error(e); say(photoMsg, 'Your photo was not saved. Check your connection and try again.', true); }
+}

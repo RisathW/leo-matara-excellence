@@ -40,7 +40,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Bebas+Neue&family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,700;1,700&family=Noto+Serif+Sinhala:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.dataset.theme="dark";try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>.loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff}[data-theme="dark"] .loader{background:#04070b}.lg{width:clamp(170px,30vw,230px)}.lg img{display:block;width:100%;height:auto}.lg img.lg-dark{display:none}[data-theme="dark"] .lg img.lg-light{display:none}[data-theme="dark"] .lg img.lg-dark{display:block}.loader.done{opacity:0;visibility:hidden}</style>
-<link rel="stylesheet" href="style.css?v=160">
+<link rel="stylesheet" href="style.css?v=161">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -127,8 +127,22 @@
         </div>
         <section id="pt-awards-box" hidden><h2 class="pt-h">Your awards</h2><ul id="pt-awards" class="pt-awards"></ul></section>
         <details class="pt-edit">
-          <summary>Edit your profile</summary>
+          <summary>Edit your profile and photo</summary>
           <form id="pt-form" class="pt-fields" novalidate>
+            <div class="wide pt-photo">
+              <span id="pt-photo-prev"></span>
+              <div>
+                <b>Profile photo</b>
+                <div class="pt-photo-a">
+                  <button id="pt-photo-pick" class="pt-btn" type="button">Choose a new photo</button>
+                  <button id="pt-photo-google" class="pt-btn ghost" type="button" hidden>Use my Google photo</button>
+                  <button id="pt-photo-none" class="pt-btn ghost" type="button" hidden>Remove photo</button>
+                </div>
+                <input id="pt-photo-in" type="file" accept="image/*" hidden>
+                <p class="pt-fine">A clear photo of your face works best. It is cropped to a square and saved at a small size.</p>
+                <p id="pt-photo-msg" class="form-status" role="status"></p>
+              </div>
+            </div>
             <label>Name<input name="name" type="text" maxlength="80" autocomplete="name" required></label>
             <label>School or workplace<input name="school" type="text" maxlength="120" autocomplete="organization"></label>
             <label class="wide">About you<textarea name="bio" rows="3" maxlength="400" placeholder="A line or two other members will see"></textarea></label>
@@ -262,6 +276,6 @@
 <script src="team-data.js?v=15"></script>
 <script src="team.js?v=3"></script>
 <script src="script.js?v=42"></script>
-<script type="module" src="portal.js?v=7"></script>
+<script type="module" src="portal.js?v=8"></script>
 </body>
 </html>

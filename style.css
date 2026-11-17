@@ -1714,3 +1714,10 @@ main:has(.chap) .chap+.wrap{margin-top:clamp(20px,3vw,32px)}
 .pt-sub .pt-badge{margin-left:0}
 .pt-mpart[hidden],.pt-row[hidden]{display:none}
 .pt-msearch{display:block;max-width:360px;margin-bottom:14px}
+/* profile photo in the edit form */
+.pt-photo{display:flex;gap:20px;align-items:center;flex-wrap:wrap;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.pt-photo>div{display:grid;gap:8px;flex:1 1 260px}
+.pt-photo b{font-size:.9375rem;color:var(--ink)}
+.pt-photo-a{display:flex;gap:8px;flex-wrap:wrap}
+.pt-photo-a [hidden]{display:none}
+.pt-photo .form-status:empty{display:none}
