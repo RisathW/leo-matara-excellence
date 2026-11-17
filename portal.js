@@ -67,15 +67,22 @@ onAuthStateChanged(auth, async u => {
   show('pt-loading');
   try {
     const ref = doc(db, 'members', u.uid);
+    // people the officers listed in advance get their role and position straight away
+    const email = (u.email || '').toLowerCase();
+    const rs = email && u.emailVerified ? await getDoc(doc(db, 'roster', email)).catch(() => null) : null;
+    const r = rs && rs.exists() ? rs.data() : null;
     let snap = await getDoc(ref);
     if (!snap.exists()) {
-      // first sign-in: create a request that an officer approves
       await setDoc(ref, {
-        name: (u.displayName || '').slice(0, 80), photo: u.photoURL || '', status: 'pending', role: 'member',
-        position: '', bio: '', school: '', createdAt: serverTimestamp(),
+        name: ((r && r.name) || u.displayName || '').slice(0, 80), photo: u.photoURL || '',
+        status: r ? 'approved' : 'pending', role: r ? r.role : 'member', position: r ? r.position : '',
+        bio: '', school: '', createdAt: serverTimestamp(), ...(r ? { joined: serverTimestamp() } : {}),
         stats: { projects: 0, hours: 0, points: 0 }, awards: []
       });
       await setDoc(doc(db, 'contacts', u.uid), { email: u.email || '' });
+      snap = await getDoc(ref);
+    } else if (r && snap.data().status === 'pending') {
+      await updateDoc(ref, { status: 'approved', role: r.role, position: r.position, name: (r.name || snap.data().name).slice(0, 80), joined: serverTimestamp() });
       snap = await getDoc(ref);
     }
     me = { id: u.uid, ...snap.data() };
@@ -102,7 +109,7 @@ function openTab(name) {
   tabs().forEach(t => { const on = t.dataset.tab === name; t.setAttribute('aria-selected', String(on)); t.tabIndex = on ? 0 : -1; });
   document.querySelectorAll('.pt-panel').forEach(p => { p.hidden = p.id !== 'pt-' + name; });
   if (name === 'members') loadMembers();
-  if (name === 'manage') loadManage();
+  if (name === 'manage') { loadManage(); loadRoster(); }
 }
 // arrow keys move between tabs
 $('.pt-tabs').addEventListener('keydown', e => {
@@ -225,6 +232,40 @@ async function loadManage() {
     }));
   } catch (e) { console.error(e); pend.replaceChildren(el('p', { class: 'small bad', text: 'Could not load. Only the Secretary, President and portal admins can open this tab.' })); }
 }
+// ---------- roster: people listed in advance by email ----------
+const ROLE_WORDS = Object.fromEntries(Object.entries(ROLES).flatMap(([k, v]) => [[k, k], [v.toLowerCase(), k]]));
+async function loadRoster() {
+  const box = $('#pt-roster');
+  try {
+    const snap = await getDocs(collection(db, 'roster'));
+    const list = snap.docs.map(d => ({ email: d.id, ...d.data() })).sort((a, b) => rank(b) - rank(a) || (a.name || '').localeCompare(b.name || ''));
+    $('#pt-roster-n').textContent = list.length ? `(${list.length})` : '';
+    box.replaceChildren(...(list.length ? list.map(x => el('div', { class: 'pt-row' },
+      el('div', { class: 'pt-row-t' }, el('b', { text: x.name || x.email }), el('small', { text: `${x.position || ROLES[x.role] || ''} · ${x.email}` })),
+      el('div', { class: 'pt-row-a' }, el('button', { class: 'btn ghost', type: 'button', text: 'Remove', onclick: e => act(e, () => deleteDoc(doc(db, 'roster', x.email)), `Remove ${x.name || x.email} from the roster?`) })))) : [el('p', { class: 'small', text: 'Nobody on the roster yet.' })]));
+  } catch (e) { console.error(e); box.replaceChildren(el('p', { class: 'small bad', text: 'Could not load the roster.' })); }
+}
+$('#pt-roster-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, msg = $('#pt-roster-msg'), lines = f.list.value.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const rows = [], bad = [];
+  for (const l of lines) {
+    const [email, name, role, ...pos] = l.split(',').map(x => x.trim());
+    const k = ROLE_WORDS[(role || 'member').toLowerCase()];
+    if (!/^[^@\s]+@[^@\s]+\.[a-z]+$/i.test(email || '') || !name || !k) { bad.push(l); continue; }
+    rows.push({ email: email.toLowerCase(), name: name.slice(0, 80), role: k, position: pos.join(', ').slice(0, 80) });
+  }
+  if (!rows.length) { say(msg, 'Nothing to add. Use one line per person: email, name, role, position', true); return; }
+  const b = f.querySelector('button'); b.disabled = true; say(msg, `Adding ${rows.length}…`);
+  try {
+    for (const x of rows) await setDoc(doc(db, 'roster', x.email), { name: x.name, role: x.role, position: x.position });
+    f.list.value = bad.join('\n');
+    say(msg, `Added ${rows.length}.` + (bad.length ? ` ${bad.length} line(s) were not understood and are left in the box.` : ''), !!bad.length);
+    loadRoster();
+  } catch (err) { console.error(err); say(msg, 'Could not add. Only officers can change the roster.', true); }
+  b.disabled = false;
+});
+
 const removeMember = async id => { await deleteDoc(doc(db, 'members', id)); await deleteDoc(doc(db, 'contacts', id)).catch(() => {}); };
 // run an officer action, then reload the list (and refresh our own card if we changed ourselves)
 async function act(e, fn, ask) {

@@ -40,7 +40,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Bebas+Neue&family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,700;1,700&family=Noto+Serif+Sinhala:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.dataset.theme="dark";try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>.loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff}[data-theme="dark"] .loader{background:#04070b}.lg{width:clamp(170px,30vw,230px)}.lg img{display:block;width:100%;height:auto}.lg img.lg-dark{display:none}[data-theme="dark"] .lg img.lg-light{display:none}[data-theme="dark"] .lg img.lg-dark{display:block}.loader.done{opacity:0;visibility:hidden}</style>
-<link rel="stylesheet" href="style.css?v=152">
+<link rel="stylesheet" href="style.css?v=153">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -130,6 +130,14 @@
       <h3 class="pt-h">Members, roles and positions</h3>
       <p class="small">Set each person's role and position, then press Save. Choose "President" for the next year's President at handover. The Secretary, President and portal admins can manage the portal.</p>
       <div id="pt-all" class="pt-list"></div>
+      <h3 class="pt-h">Roster <span id="pt-roster-n"></span></h3>
+      <p class="small">Add people in advance with the email they will sign in with. When they sign in, they are approved with this role and position straight away. One person per line: <b>email, name, role, position</b>. Role is one of: member, director, exco, secretary, president, admin.</p>
+      <form id="pt-roster-form" class="form pt-roster-form" novalidate>
+        <label>People to add<textarea name="list" rows="5" placeholder="nimal@gmail.com, Nimal Perera, director, Director of PR" spellcheck="false"></textarea></label>
+        <button class="btn" type="submit">Add to roster</button>
+        <p id="pt-roster-msg" class="form-status" role="status"></p>
+      </form>
+      <div id="pt-roster" class="pt-list"></div>
     </div>
   </div>
 
@@ -153,9 +161,9 @@
 </footer>
 
 
-<script src="team-data.js?v=14"></script>
+<script src="team-data.js?v=15"></script>
 <script src="team.js?v=3"></script>
 <script src="script.js?v=42"></script>
-<script type="module" src="portal.js?v=2"></script>
+<script type="module" src="portal.js?v=3"></script>
 </body>
 </html>

@@ -37,14 +37,14 @@ window.TEAM = {
   ],
   directors: [
     { name: "Viththarachchige Geemeth Manvidu Hewa", role: "Editorial Director", photo: "assets/team/geemeth.webp" },
+    { name: "Risath Athsara Wijethunga", role: "Director of IT", photo: "assets/team/risath.webp" },
     { name: "Janiru Oshan Rubasinghe", role: "Director of PR", photo: "assets/team/janiru.webp" },
     { name: "Jayaweera Liyana Patabadige Sasindu Nimsara", role: "Director of Fundraising", photo: "assets/team/sasindu.webp" },
     { name: "Nadithya Namaljie Abeysiri Narayana Wanigarathne", role: "Director of Education", photo: "assets/team/nadithya.webp" },
-    { name: "Risath Athsara Wijethunga", role: "Director of IT", photo: "assets/team/risath.webp" },
+    { name: "Tilmi P P Vidanage", role: "Director of International Relations", photo: "assets/team/tilmi.webp" },
     { name: "Vithana Abeywickrama Isum Ayuka", role: "Director of Joint Projects", photo: "" },
     { name: "Rashmika Sithumini Kodikara", role: "Director of Sports & Recreation", photo: "assets/team/rashmika.webp" },
     { name: "K.H.G. Yasasmi Himasha Theekshani Gamage", role: "Director of Service", photo: "assets/team/yasasmi.webp" },
-    { name: "Tilmi P P Vidanage", role: "Director of International Relations", photo: "assets/team/tilmi.webp" },
     { name: "Loku Bogahawattage Vinudi Sahansa", role: "Director of Fellowship", photo: "assets/team/vinudi.webp" }
   ],
   members: [
