@@ -22,7 +22,12 @@ const db = getFirestore(app);
 // The club account can always manage the portal, so the first officers can be approved.
 const CLUB_EMAIL = 'leoclubofmataraexcellence@gmail.com';
 const ROLES = { member: 'Member', director: 'Director', exco: 'Executive Committee', secretary: 'Secretary', president: 'President', admin: 'Portal admin' };
+// Manage (approvals, promotions, roster): President, Secretary and portal admin.
+// Projects, attendance and awards: the whole Executive Board as well.
 const OFFICER_ROLES = ['secretary', 'president', 'admin'];
+const BOARD_ROLES = [...OFFICER_ROLES, 'exco'];
+// colours members can choose for their profile
+const ACCENTS = { '': ['Club teal', ''], blue: ['Blue', '#2A52C4'], gold: ['Gold', '#C8961E'], emerald: ['Emerald', '#0F9D58'], rose: ['Rose', '#D9467A'], violet: ['Violet', '#7A5AF8'] };
 // awards: monthly ones are kept per month, the rest per Leo year
 const AWARDS = {
   month: { name: 'Leo of the Month', monthly: true, single: true },
@@ -50,9 +55,13 @@ const el = (tag, props = {}, ...kids) => {
 // fill a node with children, skipping the optional ones that are empty
 const fill = (node, ...kids) => node.replaceChildren(...kids.flat().filter(c => c != null && c !== false));
 const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
-const avatar = (m, cls = '') => m.photo
-  ? el('img', { class: 'pt-av ' + cls, src: m.photo, alt: '', referrerpolicy: 'no-referrer', loading: 'lazy' })
-  : el('span', { class: 'pt-av pt-av-i ' + cls, 'aria-hidden': 'true', text: initials(m.name) });
+const accentOf = m => (ACCENTS[m.accent] || ACCENTS[''])[1];
+const avatar = (m, cls = '') => {
+  const a = accentOf(m), st = a ? `--acc:${a}` : null, c = cls + (a ? ' has-acc' : '');
+  return m.photo
+    ? el('img', { class: 'pt-av ' + c, src: m.photo, alt: '', referrerpolicy: 'no-referrer', loading: 'lazy', style: st })
+    : el('span', { class: 'pt-av pt-av-i ' + c, 'aria-hidden': 'true', text: initials(m.name), style: st });
+};
 const say = (node, msg, bad = false) => { node.textContent = msg; node.classList.toggle('bad', bad); };
 const plural = (n, one, many = one + 's') => `${n} ${n === 1 ? one : many}`;
 const roleLine = m => m.position || (m.role && m.role !== 'member' ? ROLES[m.role] : 'Member');
@@ -74,7 +83,7 @@ const niceDate = iso => { const [y, m, d] = iso.split('-').map(Number); return `
 const views = ['pt-loading', 'pt-out', 'pt-pending', 'pt-app'];
 const show = id => views.forEach(v => { $('#' + v).hidden = v !== id; });
 
-let me = null, user = null, officer = false;
+let me = null, user = null, officer = false, board = false;
 let members = [], projects = [], awards = [];
 
 // ---------- sign-in ----------
@@ -131,6 +140,7 @@ onAuthStateChanged(auth, async u => {
     }
     me = { id: u.uid, ...snap.data() };
     officer = (u.email === CLUB_EMAIL && u.emailVerified) || (me.status === 'approved' && OFFICER_ROLES.includes(me.role));
+    board = officer || (me.status === 'approved' && BOARD_ROLES.includes(me.role));
     if (me.status !== 'approved' && !officer) {
       $('#pt-pending-name').textContent = (me.name || 'there').split(' ')[0];
       show('pt-pending');
@@ -179,7 +189,7 @@ navs().forEach(b => b.addEventListener('click', () => openPanel(b.dataset.panel)
 function openPanel(name) {
   navs().forEach(b => b.toggleAttribute('aria-current', b.dataset.panel === name));
   document.querySelectorAll('.pt-panel').forEach(p => { p.hidden = p.id !== 'pt-' + name; });
-  ({ overview: renderOverview, projects: renderProjects, board: renderBoard, members: renderMembers, manage: loadManage, give: () => { drawAwardForm(); drawAwards(); } })[name]();
+  ({ overview: renderOverview, projects: renderProjects, board: renderBoard, members: renderMembers, manage: loadManage, give: () => { if (board) drawAwardForm(); drawAwards(); } })[name]();
   const main = $('.pt-main');
   if (main.getBoundingClientRect().top < 0) main.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -188,9 +198,17 @@ function renderApp() {
   show('pt-app');
   $('#pt-me').replaceChildren(avatar(me), el('span', {}, el('b', { text: me.name || user.email }), el('small', { text: roleLine(me) })));
   $('#pt-nav-manage').hidden = !officer;
-  document.querySelectorAll('.pt-officer').forEach(n => { n.hidden = !officer; });
+  document.querySelectorAll('.pt-officer').forEach(n => { n.hidden = !board; });
+  $('#pt-give-p').textContent = board
+    ? 'Announce Leo of the Month and the year\'s awards. They appear on the winner\'s profile, on the home page and the Award winners page straight away.'
+    : 'Leos the Executive Board has recognised for their service, newest first.';
   const f = $('#pt-form');
   f.name.value = me.name || ''; f.school.value = me.school || ''; f.bio.value = me.bio || '';
+  fill($('#pt-accents'), Object.entries(ACCENTS).map(([k, [label, hex]]) => el('label', { class: 'pt-swatch', title: label },
+    el('input', { type: 'radio', name: 'accent', value: k, checked: (me.accent || '') === k }),
+    el('span', { style: `--sw:${hex || 'var(--gold-d)'}` }), el('span', { class: 'sr-only', text: label }))));
+  const acc = accentOf(me);
+  document.querySelector('.pt-main').style.cssText = acc ? `--me-acc:${acc}` : '';
   fill($('#pt-photo-prev'), avatar(me, 'pt-av-lg'));
   $('#pt-photo-google').hidden = !user.photoURL || me.photo === user.photoURL;
   $('#pt-photo-none').hidden = !me.photo;
@@ -211,7 +229,7 @@ function renderOverview() {
   renderTrack($('#pt-track'), me.id);
   const mine = projects.filter(p => (p.attendees || []).includes(me.id) && p.date <= todayISO()).slice(0, 5);
   const next = projects.filter(p => p.date > todayISO()).reverse().slice(0, 3);
-  $('#pt-recent').replaceChildren(...(mine.length ? mine.map(p => projRow(p, false)) : [empty('No projects recorded for you yet. The Secretary marks attendance after each project.')]));
+  $('#pt-recent').replaceChildren(...(mine.length ? mine.map(p => projRow(p, false)) : [empty('No projects recorded for you yet. The Executive Board marks attendance after each project.')]));
   $('#pt-next').replaceChildren(...(next.length ? next.map(p => projRow(p, false)) : [empty('No upcoming projects added yet.')]));
   const aw = awardsOf(me.id);
   $('#pt-awards-box').hidden = !aw.length;
@@ -257,7 +275,7 @@ function renderTrack(box, uid) {
 $('#pt-form').addEventListener('submit', async e => {
   e.preventDefault();
   const f = e.target, msg = $('#pt-form-msg');
-  const data = { name: f.name.value.trim().slice(0, 80), school: f.school.value.trim().slice(0, 120), bio: f.bio.value.trim().slice(0, 400) };
+  const data = { name: f.name.value.trim().slice(0, 80), school: f.school.value.trim().slice(0, 120), bio: f.bio.value.trim().slice(0, 400), accent: (f.querySelector('input[name=accent]:checked') || {}).value || '' };
   if (!data.name) { say(msg, 'Type your name.', true); f.name.focus(); return; }
   try {
     await updateDoc(doc(db, 'members', me.id), data);
@@ -279,7 +297,7 @@ function renderProjects() {
   const list = projects.filter(p => projFilter === 'all' || (p.attendees || []).includes(me.id));
   const box = $('#pt-plist');
   if (!list.length) {
-    box.replaceChildren(empty(projFilter === 'mine' ? 'You have no recorded projects yet.' : officer ? 'No projects yet. Add the first one with "Add project".' : 'No projects have been added yet.'));
+    box.replaceChildren(empty(projFilter === 'mine' ? 'You have no recorded projects yet.' : board ? 'No projects yet. Add the first one with "Add project".' : 'No projects have been added yet.'));
     return;
   }
   const groups = [];
@@ -307,7 +325,7 @@ function projRow(p, full) {
     el('div', { class: 'pt-proj-n' },
       el('span', { text: `${Number(p.hours) || 0} h, ${Number(p.points) || 0} pts` }),
       el('small', { text: future ? 'Upcoming' : mine ? 'You served' : plural(att, 'Leo') + ' served' })),
-    full && officer ? el('div', { class: 'pt-proj-a' },
+    full && board ? el('div', { class: 'pt-proj-a' },
       el('button', { class: 'pt-btn', type: 'button', text: 'Attendance', onclick: () => openAttendance(p) }),
       el('button', { class: 'pt-btn ghost', type: 'button', text: 'Edit', onclick: () => openProjectForm(p) })) : null);
 }
@@ -348,7 +366,7 @@ pform.addEventListener('submit', async e => {
     pdlg.close();
     await loadData(); renderProjects();
     toast(editing ? 'Project saved.' : 'Project added. Mark attendance once it has taken place.');
-  } catch (err) { console.error(err); say(msg, 'The project was not saved. Only the Secretary, President and portal admins can add projects.', true); }
+  } catch (err) { console.error(err); say(msg, 'The project was not saved. Only the Executive Board can add projects.', true); }
 });
 $('#pt-pdel').addEventListener('click', async () => {
   if (!editing || !confirm(`Delete "${editing.title}"? Everyone's hours and points from it will be removed.`)) return;
@@ -600,10 +618,10 @@ function clearPick() {
   aSearch.hidden = false; aSearch.value = ''; aResults.replaceChildren();
 }
 function drawAwards() {
-  $('#pt-alist-aw').replaceChildren(...(awards.length ? awards.map(a => el('div', { class: 'pt-row' },
+  $('#pt-alist-aw').replaceChildren(...(awards.length ? awards.map(a => el('div', { class: 'pt-row pt-award-row' },
     avatar(memberById(a.memberId) || a),
     el('div', { class: 'pt-row-t' }, el('b', { text: a.name }), el('small', { text: awardLabel(a) + (a.citation ? `. ${a.citation}` : '') })),
-    el('div', { class: 'pt-row-a' }, el('button', { class: 'pt-btn ghost', type: 'button', text: 'Withdraw', onclick: e => act(e, () => deleteDoc(doc(db, 'awards', a.id)), `Withdraw "${awardLabel(a)}" from ${a.name}? It will disappear from the website.`) })))) : [empty('No awards announced yet.')]));
+    board && el('div', { class: 'pt-row-a' }, el('button', { class: 'pt-btn ghost', type: 'button', text: 'Withdraw', onclick: e => act(e, () => deleteDoc(doc(db, 'awards', a.id)), `Withdraw "${awardLabel(a)}" from ${a.name}? It will disappear from the website.`) })))) : [empty('No awards announced yet.')]));
 }
 aform.addEventListener('submit', async e => {
   e.preventDefault();
@@ -622,7 +640,7 @@ aform.addEventListener('submit', async e => {
     aform.citation.value = ''; clearPick();
     await loadData(); drawAwards();
     say(msg, ''); toast(`${label} announced for ${m.name}. It now shows on the website.`);
-  } catch (err) { console.error(err); say(msg, 'The award was not saved. Only the Secretary, President and portal admins can announce awards.', true); }
+  } catch (err) { console.error(err); say(msg, 'The award was not saved. Only the Executive Board can announce awards.', true); }
   b.disabled = false;
 });
 

@@ -40,7 +40,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Bebas+Neue&family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Libre+Baskerville:ital,wght@0,700;1,700&family=Noto+Serif+Sinhala:wght@400;500&display=swap" rel="stylesheet">
 <script>document.documentElement.dataset.theme="dark";try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
 <style>.loader{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:#fff}[data-theme="dark"] .loader{background:#04070b}.lg{width:clamp(170px,30vw,230px)}.lg img{display:block;width:100%;height:auto}.lg img.lg-dark{display:none}[data-theme="dark"] .lg img.lg-light{display:none}[data-theme="dark"] .lg img.lg-dark{display:block}.loader.done{opacity:0;visibility:hidden}</style>
-<link rel="stylesheet" href="style.css?v=163">
+<link rel="stylesheet" href="style.css?v=165">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -106,7 +106,7 @@
         <button type="button" data-panel="projects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v17l-7-4-7 4z"/></svg>Projects</button>
         <button type="button" data-panel="board"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>Leaderboard</button>
         <button type="button" data-panel="members"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7zM2.5 20c.7-3.3 3.3-5.3 6.5-5.3s5.8 2 6.5 5.3M16 4.3a3.5 3.5 0 0 1 0 6.4M18 14.9c1.9.7 3.2 2.6 3.5 5.1"/></svg>Members</button>
-        <button type="button" data-panel="give" id="pt-nav-give" class="pt-officer" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-3 5 3-1.5-8"/></svg>Awards</button>
+        <button type="button" data-panel="give" id="pt-nav-give"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="9" r="5"/><path d="M8.5 13 7 21l5-3 5 3-1.5-8"/></svg>Awards</button>
         <button type="button" data-panel="manage" id="pt-nav-manage" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>Manage <span id="pt-pend-n" class="pt-badge"></span></button>
       </nav>
       <button class="pt-out pt-signout" type="button">Sign out</button>
@@ -145,9 +145,10 @@
             </div>
             <label>Name<input name="name" type="text" maxlength="80" autocomplete="name" required></label>
             <label>School or workplace<input name="school" type="text" maxlength="120" autocomplete="organization"></label>
+            <fieldset class="wide pt-accent"><legend>Profile colour</legend><div id="pt-accents" class="pt-swatches"></div><p class="pt-fine">Shown around your photo, and on your numbers here.</p></fieldset>
             <label class="wide">About you<textarea name="bio" rows="3" maxlength="400" placeholder="A line or two other members will see"></textarea></label>
             <div class="wide pt-form-end"><button class="pt-btn" type="submit">Save profile</button><p id="pt-form-msg" class="form-status" role="status"></p></div>
-            <p class="wide pt-fine">Other members see your name, photo, school, what you write here and your numbers. Your email stays private.</p>
+            <p class="wide pt-fine">Other members see your name, photo, colour, school, what you write here and your numbers. Your email stays private.</p>
           </form>
         </details>
       </section>
@@ -168,7 +169,7 @@
           <h1 id="pt-board-h">Leaderboard</h1>
           <div class="pt-seg" role="group" aria-label="Period"><button type="button" data-byear="this" aria-pressed="true" id="pt-byear-this">This Leo year</button><button type="button" data-byear="all" aria-pressed="false">All time</button></div>
         </header>
-        <p class="pt-lead">Points come from the projects you serve at. Each project carries its own hours and points, set by the Secretary.</p>
+        <p class="pt-lead">Points come from the projects you serve at. Each project carries its own hours and points, set by the Executive Board.</p>
         <ol id="pt-board-list" class="pt-board"></ol>
       </section>
 
@@ -211,8 +212,8 @@
       </section>
 
       <section class="pt-panel" id="pt-give" aria-labelledby="pt-give-h" hidden>
-        <header class="pt-head"><h1 id="pt-give-h">Awards</h1><p>Announce Leo of the Month and the year's awards. They appear on the winner's profile, on the home page and the Award winners page straight away.</p></header>
-        <form id="pt-aform" class="pt-fields pt-aform" novalidate>
+        <header class="pt-head"><h1 id="pt-give-h">Awards</h1><p id="pt-give-p"></p></header>
+        <form id="pt-aform" class="pt-fields pt-aform pt-officer" novalidate hidden>
           <label>Award<select name="type"></select></label>
           <label id="pt-a-month">Month<input name="month" type="month"></label>
           <label id="pt-a-year" hidden>Leo year<select name="ly"></select></label>
@@ -226,7 +227,7 @@
           <label class="wide">Why they receive it<textarea name="citation" rows="2" maxlength="280" placeholder="One or two sentences for the website, for example: Led the Polhena beach clean-up and served at every project in October."></textarea></label>
           <div class="wide pt-form-end"><button class="pt-btn" type="submit">Announce award</button><p id="pt-aform-msg" class="form-status" role="status"></p></div>
         </form>
-        <h2 class="pt-h">Announced</h2>
+        <h2 class="pt-h pt-officer" hidden>Announced</h2>
         <div id="pt-alist-aw" class="pt-list"></div>
       </section>
     </div>
@@ -282,6 +283,6 @@
 <script src="team-data.js?v=15"></script>
 <script src="team.js?v=3"></script>
 <script src="script.js?v=42"></script>
-<script type="module" src="portal.js?v=9"></script>
+<script type="module" src="portal.js?v=10"></script>
 </body>
 </html>
