@@ -2,7 +2,7 @@
 Club: Leo Club of Matara Excellence
 District: Leo District 306 D8, Leo Multiple District 306
 Sponsor: Lions Club of Matara Excellence
-Site: https://risathw.github.io/leo-matara-excellence/
+Site: https://www.leoclubofmataraexcellence.org/
 Location: Matara, Sri Lanka
 
 /* SITE */
