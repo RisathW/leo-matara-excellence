@@ -33,7 +33,7 @@ window.TEAM = {
     { name: "Nemin Sasmitha Palliyaguruge", role: "Chief Coordinator, Project", photo: "assets/team/nemin.webp" },
     { name: "Paramee Anudima Wijewickrama", role: "Chief Coordinator, Service", photo: "assets/team/paramee.webp" },
     { name: "P.P. Sedna Dehemi Dharana", role: "Chief Coordinator, Reporting & Administration", photo: "assets/team/dehemi.webp" },
-    { name: "T.D. Vinuka Ransath Pulsitha", role: "Chief Coordinator, Membership", photo: "" }
+    { name: "T.D. Vinuka Ransath Pulsitha", role: "Chief Coordinator, Membership", photo: "assets/team/vinuka.webp" }
   ],
   directors: [
     { name: "Viththarachchige Geemeth Manvidu Hewa", role: "Editorial Director", photo: "assets/team/geemeth.webp" },
@@ -42,7 +42,7 @@ window.TEAM = {
     { name: "Jayaweera Liyana Patabadige Sasindu Nimsara", role: "Director of Fundraising", photo: "assets/team/sasindu.webp" },
     { name: "Nadithya Namaljie Abeysiri Narayana Wanigarathne", role: "Director of Education", photo: "assets/team/nadithya.webp" },
     { name: "Tilmi P P Vidanage", role: "Director of International Relations", photo: "assets/team/tilmi.webp" },
-    { name: "Vithana Abeywickrama Isum Ayuka", role: "Director of Joint Projects", photo: "" },
+    { name: "Vithana Abeywickrama Isum Ayuka", role: "Director of Joint Projects", photo: "assets/team/isum.webp" },
     { name: "Rashmika Sithumini Kodikara", role: "Director of Sports & Recreation", photo: "assets/team/rashmika.webp" },
     { name: "K.H.G. Yasasmi Himasha Theekshani Gamage", role: "Director of Service", photo: "assets/team/yasasmi.webp" },
     { name: "Loku Bogahawattage Vinudi Sahansa", role: "Director of Fellowship", photo: "assets/team/vinudi.webp" }
